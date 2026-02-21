@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JLPT N1 어휘 뉘앙스 트레이닝</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Pretendard:wght@500;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- 뒤로가기 버튼 스타일 --- */
+        .back-link {
+            display: inline-block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #d97706; /* 골드 색상 */
+            color: #1c1917; /* 다크 배경색 */
+            text-decoration: none;
+            border-radius: 8px;
+            font-family: 'Pretendard', sans-serif;
+            font-weight: bold;
+            transition: 0.3s;
+            text-align: center;
+        }
+        .back-link:hover { background-color: #b45309; color: white; transform: translateY(-2px); }
+        .top-bar { text-align: center; background-color: #000; padding-top: 10px; }
+
+        /* --- 기존 수훈님 CSS 코드 (배경색 추가) --- */
+        body { background-color: #000; margin: 0; padding: 0; } /* 전체 다크 모드 */
+
+        .n1-quiz-container {
+            font-family: 'Pretendard', 'Noto Sans JP', sans-serif;
+            max-width: 800px; margin: 20px auto 40px auto; background: #1c1917; border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4); border: 1px solid #44403c; overflow: hidden;
+            color: #f5f5f4; min-height: 600px; display: flex; flex-direction: column;
+            box-sizing: border-box;
+        }
+        .n1-quiz-container * { box-sizing: border-box; }
+
+        .quiz-header { background: linear-gradient(90deg, #b45309, #d97706); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; color: white; font-weight: bold; }
+        .quiz-body { padding: 40px 30px; flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        
+        .question-card { background: #292524; border: 1px solid #57534e; padding: 30px; border-radius: 12px; width: 100%; margin-bottom: 30px; }
+        .q-context { font-size: 1.6rem; margin-bottom: 20px; line-height: 1.6; word-break: keep-all; color: #fff; }
+        .q-blank { color: #fcd34d; border-bottom: 3px solid #fcd34d; padding: 0 10px; font-weight: 900; }
+        
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 600px; margin: 0 auto;}
+        
+        .option-btn { background: #44403c; border: 2px solid #57534e; color: #e7e5e4; padding: 20px; border-radius: 12px; font-size: 1.4rem; font-weight: bold; cursor: pointer; transition: all 0.2s; }
+        .option-btn:hover { background: #57534e; border-color: #d97706; color: #fcd34d; transform: translateY(-2px); }
+        
+        .feedback-box { margin-top: 25px; padding: 20px; border-radius: 10px; text-align: left; width: 100%; max-width: 600px; display: none; background: #0f172a; border-left: 5px solid #3b82f6; animation: slideDown 0.3s; margin-left:auto; margin-right:auto;}
+        .feedback-box.correct { border-left-color: #10b981; background: #064e3b; }
+        .feedback-box.wrong { border-left-color: #ef4444; background: #450a0a; }
+        .fb-title { font-size: 1.2rem; font-weight: 900; margin-bottom: 10px; display: block; }
+        .fb-desc { font-size: 1.15rem; line-height: 1.6; color: #e5e7eb; }
+        
+        .btn-next { margin-top: 20px; background: #d97706; color: white; border: none; padding: 12px 30px; border-radius: 8px; font-size: 1.2rem; font-weight: bold; cursor: pointer; display: none; }
+        .btn-next:hover { background: #b45309; }
+
+        .result-view { display: none; text-align: center; padding: 40px; color: white; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
+        
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 500px) {
+            .options-grid { grid-template-columns: 1fr; }
+            .q-context { font-size: 1.3rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <a href="../index.html" class="back-link">🔙 메인 목록으로 돌아가기</a>
+    </div>
+
+    <div class="n1-quiz-container">
+        <div class="quiz-header">
+            <div class="quiz-title">⚖️ N1 Vocabulary Nuance Training</div>
+            <div class="quiz-progress" id="quiz-progress">1 / 10</div>
+        </div>
+        <div class="quiz-body" id="quiz-view">
+            <div class="question-card"><div class="q-context" id="q-context">문제 로딩 중...</div></div>
+            <div class="options-grid" id="options-area"></div>
+            <div class="feedback-box" id="feedback-box">
+                <span class="fb-title" id="fb-title"></span>
+                <div class="fb-desc" id="fb-desc"></div>
+            </div>
+            <button class="btn-next" id="btn-next">다음 문제 ▶</button>
+        </div>
+        <div class="result-view" id="result-view">
+            <div class="score-big" id="final-score" style="font-size: 4rem; font-weight: 900; color: #fcd34d; margin-bottom: 20px;">0점</div>
+            <p id="result-comment" style="margin-bottom:30px; font-size:1.2rem;"></p>
+            <button onclick="location.reload()" style="background:#44403c; color:white; border:1px solid #d97706; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight: bold; font-family: 'Pretendard', sans-serif;">↺ 다시 학습하기</button>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const quizData = [
+            { q: "最新鋭の機械を <span class='q-blank'>( ? )</span>する。", options: ["制作", "製作"], answer: 1, desc: "정답: <strong>製作 (せいさく)</strong><br>실용적인 물건이나 기계, 부품 등을 만드는 공업적 활동에는 '製作'을 사용합니다.", nuance: "참고: 영화, 그림 등 예술적 창작은 '制作'를 씁니다." },
+            { q: "幸福の <span class='q-blank'>( ? )</span>に一生を捧げる。", options: ["探求", "探究"], answer: 0, desc: "정답: <strong>探求 (たんきゅう)</strong><br>행복, 평화 등 추상적인 가치를 찾아 구함에는 '探求'가 적합합니다.", nuance: "참고: 학문이나 진리를 파고들어 연구할 때는 '探究'를 사용합니다." }, // 오타 수정 (幸福의, 바치다 -> 일본어 원문으로 변경)
+            { q: "汚職事件の原因を <span class='q-blank'>( ? )</span>する。", options: ["追求", "追及"], answer: 1, desc: "정답: <strong>追及 (ついきゅう)</strong><br>책임이나 원인 등을 끝까지 뒤쫓아 따질 때는 '追及'을 씁니다.", nuance: "참고: 이상이나 이익을 쫓아 구할 때는 '追求'を 사용합니다." }, // 오타 수정
+            { q: "個人のプライバシーを <span class='q-blank'>( ? )</span>する。", options: ["保障", "保証"], answer: 0, desc: "정답: <strong>保障 (ほしょう)</strong><br>권리나 이익 등이 침해되지 않도록 보호함은 '保障'입니다.", nuance: "참고: 품질이나 인물이 틀림없음을 보증함은 '保証'입니다." }, // 오타 수정
+            { q: "市場を市民に <span class='q-blank'>( ? )</span>する。", options: ["開放", "解放"], answer: 0, desc: "정답: <strong>開放 (かいほう)</strong><br>금지된 장소를 출입할 수 있게 열어 놓음은 '開放'입니다.", nuance: "참고: 구속이나 속박에서 벗어나게 함은 '解放'입니다." }, // 오타 수정
+            { q: "相手の気配を <span class='q-blank'>( ? )</span>する。", options: ["感知", "関知"], answer: 0, desc: "정답: <strong>感知 (かんち)</strong><br>미묘한 움직임이나 낌새를 느낄 때는 '感知'를 사용합니다.", nuance: "참고: 관여하여 알다라는 뜻의 '関知'는 주로 부정형(関知しない)으로 씁니다." }, // 오타 수정
+            { q: "未知の領域を <span class='q-blank'>( ? )</span>する。", options: ["開拓", "開墾"], answer: 0, desc: "정답: <strong>開拓 (かいたく)</strong><br>새로운 분야나 판로를 열어 나감은 '開拓'입니다.", nuance: "참고: 거친 땅을 일구어 논밭을 만드는 농경적 행위는 '開墾'です." }, // 오타 수정
+            { q: "国家経済を <span class='q-blank'>( ? )</span>する。", options: ["更正", "更生"], answer: 0, desc: "정답: <strong>更正 (こうせい)</strong><br>잘못된 부분을 바로잡거나 다시 고침은 '更正'입니다.", nuance: "참고: 나쁜 생활 태도를 버리고 다시 태어남은 '更生'です." }, // 오타 수정
+            { q: "敵の侵略に <span class='q-blank'>( ? )</span>する。", options: ["抗戦", "抗議"], answer: 0, desc: "정답: <strong>抗戦 (こうせん)</strong><br>무력으로 적의 공격에 맞서 싸움은 '抗戦'입니다.", nuance: "참고: 부당한 결정에 반대 의견을 내세움은 '抗議'입니다." }, // 오타 수정
+            { q: "公文書を <span class='q-blank'>( ? )</span>する。", options: ["廃棄", "破棄"], answer: 1, desc: "정답: <strong>破棄 (はき)</strong><br>계약, 조약, 문서 등을 무효로 만들어 버림은 '破棄'입니다.", nuance: "참고: 쓰레기나 폐기물을 버리는 행위는 '廃棄'입니다." } // 오타 수정
+        ];
+
+        let currentIdx = 0; let score = 0;
+        const els = { 
+            progress: document.getElementById('quiz-progress'), 
+            context: document.getElementById('q-context'), 
+            optionsArea: document.getElementById('options-area'), 
+            feedbackBox: document.getElementById('feedback-box'), 
+            fbTitle: document.getElementById('fb-title'), 
+            fbDesc: document.getElementById('fb-desc'), 
+            btnNext: document.getElementById('btn-next'), 
+            quizView: document.getElementById('quiz-view'), 
+            resultView: document.getElementById('result-view'), 
+            finalScore: document.getElementById('final-score'), 
+            resultComment: document.getElementById('result-comment') 
+        };
+
+        function loadQuestion() {
+            const data = quizData[currentIdx];
+            els.progress.innerText = `${currentIdx + 1} / ${quizData.length}`;
+            els.context.innerHTML = data.q;
+            els.optionsArea.innerHTML = '';
+            els.feedbackBox.style.display = 'none';
+            els.btnNext.style.display = 'none';
+            
+            data.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn'; 
+                btn.innerText = opt;
+                btn.onclick = () => {
+                    const isCor = (idx === data.answer);
+                    if(isCor) score++;
+                    els.feedbackBox.style.display = 'block';
+                    els.feedbackBox.className = `feedback-box ${isCor ? 'correct' : 'wrong'}`;
+                    els.fbTitle.innerText = isCor ? "⭕ Correct" : "❌ Incorrect";
+                    els.fbDesc.innerHTML = data.desc + "<br><br><span style='color:#fcd34d;'>" + data.nuance + "</span>"; // 뉘앙스 부분 색상 포인트
+                    els.btnNext.style.display = 'inline-block';
+                    els.optionsArea.style.pointerEvents = 'none';
+                    
+                    // 오답일 경우 정답 버튼 강조
+                    if (!isCor) {
+                        btn.style.backgroundColor = '#450a0a';
+                        btn.style.borderColor = '#ef4444';
+                        els.optionsArea.children[data.answer].style.backgroundColor = '#064e3b';
+                        els.optionsArea.children[data.answer].style.borderColor = '#10b981';
+                    } else {
+                        btn.style.backgroundColor = '#064e3b';
+                        btn.style.borderColor = '#10b981';
+                    }
+                };
+                els.optionsArea.appendChild(btn);
+            });
+            els.optionsArea.style.pointerEvents = 'auto';
+        }
+
+        els.btnNext.onclick = () => {
+            currentIdx++;
+            if (currentIdx < quizData.length) loadQuestion();
+            else {
+                els.quizView.style.display = 'none';
+                els.resultView.style.display = 'flex';
+                els.finalScore.innerText = `${(score/quizData.length)*100}점`;
+                els.resultComment.innerText = score >= 8 ? "N1 합격이 기대되는 수준입니다. 완벽합니다!" : "유의어 뉘앙스 학습에 더 집중하시기 바랍니다.";
+            }
+        };
+        
+        loadQuestion();
+    });
+    </script>
+</body>
+</html>
