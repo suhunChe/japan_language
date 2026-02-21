@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JLPT N1 청해 즉시응답 트레이닝</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Pretendard:wght@500;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- 뒤로가기 버튼 스타일 --- */
+        .back-link {
+            display: inline-block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #d97706; /* 골드 색상 */
+            color: #1c1917; /* 다크 배경색 */
+            text-decoration: none;
+            border-radius: 8px;
+            font-family: 'Pretendard', sans-serif;
+            font-weight: bold;
+            transition: 0.3s;
+            text-align: center;
+        }
+        .back-link:hover { background-color: #b45309; color: white; transform: translateY(-2px); }
+        .top-bar { text-align: center; background-color: #000; padding-top: 10px; }
+
+        /* --- 기존 수훈님 CSS 코드 --- */
+        body { background-color: #000; margin: 0; padding: 0; } /* 전체 다크 모드 */
+
+        .n1-listen-container {
+            font-family: 'Pretendard', 'Noto Sans JP', sans-serif;
+            max-width: 800px; margin: 20px auto 40px auto; background: #1c1917; border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4); border: 1px solid #44403c; overflow: hidden;
+            color: #f5f5f4; min-height: 600px; display: flex; flex-direction: column; position: relative;
+            box-sizing: border-box;
+        }
+        .n1-listen-container * { box-sizing: border-box; }
+
+        .quiz-header { background: linear-gradient(90deg, #b45309, #d97706); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; color: white; font-weight: bold; }
+        
+        /* 타이머 바 */
+        .timer-bar-bg { width: 100%; height: 6px; background: #44403c; }
+        .timer-bar { width: 100%; height: 100%; background: #ef4444; transition: width 1s linear; }
+
+        .quiz-body { padding: 40px 30px; flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .question-card { background: #292524; border: 1px solid #57534e; padding: 30px; border-radius: 12px; width: 100%; margin-bottom: 30px; text-align: left; position: relative; }
+        .speaker-label { font-size: 0.9rem; color: #fcd34d; margin-bottom: 5px; font-weight: bold; }
+        .q-text { font-size: 1.5rem; line-height: 1.6; color: #fff; font-weight: bold; }
+        
+        .options-grid { display: grid; grid-template-columns: 1fr; gap: 15px; width: 100%; max-width: 600px; margin: 0 auto;}
+        .option-btn { background: #44403c; border: 2px solid #57534e; color: #e7e5e4; padding: 18px; border-radius: 12px; font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: all 0.2s; text-align: left; }
+        .option-btn:hover { background: #57534e; border-color: #d97706; color: #fcd34d; }
+        
+        .feedback-box { margin-top: 25px; padding: 20px; border-radius: 10px; text-align: left; width: 100%; max-width: 600px; display: none; background: #0f172a; border-left: 5px solid #3b82f6; animation: slideDown 0.3s; margin-left: auto; margin-right: auto;}
+        .feedback-box.correct { border-left-color: #10b981; background: #064e3b; }
+        .feedback-box.wrong { border-left-color: #ef4444; background: #450a0a; }
+        .fb-title { font-size: 1.2rem; font-weight: 900; margin-bottom: 10px; display: block; }
+        .fb-desc { font-size: 1.15rem; line-height: 1.6; color: #e5e7eb; }
+        
+        .btn-next { margin-top: 20px; background: #d97706; color: white; border: none; padding: 12px 30px; border-radius: 8px; font-size: 1.2rem; font-weight: bold; cursor: pointer; display: none; }
+        .btn-next:hover { background: #b45309; }
+        .result-view { display: none; text-align: center; padding: 40px; color: white; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
+        
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } 100% { transform: translateX(0); } }
+        .shake { animation: shake 0.3s; }
+        
+        @media (max-width: 500px) {
+            .q-text { font-size: 1.3rem; }
+            .option-btn { font-size: 1.1rem; padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <a href="../index.html" class="back-link">🔙 메인 목록으로 돌아가기</a>
+    </div>
+
+    <div class="n1-listen-container">
+        <div class="quiz-header">
+            <div class="quiz-title">⚡ N1 Instant Response</div>
+            <div class="quiz-progress" id="quiz-progress">1 / 10</div>
+        </div>
+        <div class="timer-bar-bg"><div class="timer-bar" id="timer-bar"></div></div>
+        
+        <div class="quiz-body" id="quiz-view">
+            <div class="question-card">
+                <div class="speaker-label">발화:</div>
+                <div class="q-text" id="q-text">Loading...</div>
+            </div>
+            <div class="options-grid" id="options-area"></div>
+            <div class="feedback-box" id="feedback-box">
+                <span class="fb-title" id="fb-title"></span>
+                <div class="fb-desc" id="fb-desc"></div>
+            </div>
+            <button class="btn-next" id="btn-next">다음 문제 ▶</button>
+        </div>
+        
+        <div class="result-view" id="result-view">
+            <div class="score-big" id="final-score" style="font-size: 4rem; font-weight: 900; color: #fcd34d; margin-bottom: 20px;">0점</div>
+            <p id="result-comment" style="margin-bottom:30px; font-size:1.2rem;"></p>
+            <button onclick="location.reload()" style="background:#44403c; color:white; border:1px solid #d97706; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight: bold; font-family:'Pretendard', sans-serif;">↺ 다시 학습하기</button>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const quizData = [
+            { 
+                q: "こんな大事なこと、一存では決めかねます。", 
+                options: [
+                    "1. じゃあ、またの機会にしましょう。", 
+                    "2. それでは、上の方と相談なさってください。", 
+                    "3. どうぞ、ご自由に決めてください。"
+                ], 
+                answer: 1, 
+                desc: "정답: <strong>2번</strong><br>핵심: <strong>決めかねます (결정하기 어렵습니다)</strong><br>해설: '제 마음대로 결정하기 어렵다'는 거절/유보의 뜻이므로, '윗분과 상의하라'는 2번이 적절합니다."
+            },
+            { 
+                q: "あの人の言うことなんか、まともに聞くことないよ。", 
+                options: [
+                    "1. ええ、聞き流すことにします。", 
+                    "2. はい、真剣に聞くつもりです。", 
+                    "3. そんなに怒らないでください。"
+                ], 
+                answer: 0, 
+                desc: "정답: <strong>1번</strong><br>핵심: <strong>まともに聞くことない (제대로 들을 필요 없다)</strong><br>해설: '진지하게 들을 필요 없다'는 충고이므로, '한 귀로 듣고 흘리겠다(聞き流す)'는 1번이 자연스럽습니다."
+            },
+            { 
+                q: "せっかくのお申し出ですが、今回は見送らせていただきます。", 
+                options: [
+                    "1. それは楽しみですね。", 
+                    "2. どこまで送ればいいですか。", 
+                    "3. それは残念です。"
+                ], 
+                answer: 2, 
+                desc: "정답: <strong>3번</strong><br>핵심: <strong>見送らせていただきます (보류하겠습니다/거절하겠습니다)</strong><br>해설: 정중한 거절 표현입니다. 제안이 거절당했으므로 '아쉽다(残念)'는 반응이 적절합니다. (배웅하다는 뜻이 아님)"
+            },
+            { 
+                q: "お客様、こちらの会場での飲食はご遠慮いただいております。", 
+                options: [
+                    "1. じゃあ、遠慮なくいただきます。", 
+                    "2. すみません、すぐにしまいます。", 
+                    "3. おいしそうですね。"
+                ], 
+                answer: 1, 
+                desc: "정답: <strong>2번</strong><br>핵심: <strong>ご遠慮いただいております (삼가 주십시오)</strong><br>해설: 금지를 나타내는 완곡한 표현입니다. '죄송합니다, 바로 집어넣겠습니다'가 적절합니다."
+            },
+            { 
+                q: "部長があんなに怒るなんて、見たことないね。", 
+                options: [
+                    "1. 本当に、腹に据えかねたんだろうね。", 
+                    "2. きっと、目がないんだね。", 
+                    "3. 顔が広かったからね。"
+                ], 
+                answer: 0, 
+                desc: "정답: <strong>1번</strong><br>핵심: <strong>腹に据えかねる (참을 수 없이 화나다)</strong><br>해설: 부장이 화내는 상황이므로 관용구 '화가 났다'를 사용한 1번이 정답입니다."
+            },
+            { 
+                q: "プロジェクトの成功は、君の双肩にかかっているんだよ。", 
+                options: [
+                    "1. 肩が凝らないようにします。", 
+                    "2. ご期待に添えるよう頑張ります。", 
+                    "3. 荷が重いので辞退します。"
+                ], 
+                answer: 1, 
+                desc: "정답: <strong>2번</strong><br>핵심: <strong>双肩にかかっている (책임이 달려있다)</strong><br>해설: 기대를 받고 있으므로 '기대에 부응하도록(ご期待に添えるよう) 노력하겠다'는 2번이 적절합니다. 3번은 너무 부정적입니다."
+            },
+            { 
+                q: "行けるものなら、今すぐ日本へ行きたいよ。", 
+                options: [
+                    "1. 本当に日本が好きなんだね。", 
+                    "2. どうして行かなかったの？", 
+                    "3. もうすぐ行けるから大丈夫だよ。"
+                ], 
+                answer: 0, 
+                desc: "정답: <strong>1번</strong><br>핵심: <strong>V(가능형)+ものなら (할 수만 있다면)</strong><br>해설: '갈 수만 있다면 가고 싶다(하지만 못 간다)'는 강한 희망/가정을 나타냅니다. 그 마음을 공감해주는 1번이 정답입니다."
+            },
+            { 
+                q: "鈴木さん、お見えになりました。", 
+                options: [
+                    "1. はい、よく見えます。", 
+                    "2. こちらへ通してください。", 
+                    "3. まだ見ていません。"
+                ], 
+                answer: 1, 
+                desc: "정답: <strong>2번</strong><br>핵심: <strong>お見えになる (오시다 - 존경어)</strong><br>해설: '보이다'가 아니라 '오셨다'는 뜻입니다. 손님이 오셨으니 '이쪽으로 안내하세요(通してください)'가 정답입니다."
+            },
+            { 
+                q: "この件、私がやらざるを得ないでしょうか。", 
+                options: [
+                    "1. いや、君がやる必要はないよ。", 
+                    "2. はい、君にはやらせません。", 
+                    "3. いいえ、ぜひやってください。"
+                ], 
+                answer: 0, 
+                desc: "정답: <strong>1번</strong><br>핵심: <strong>ざるを得ない (하지 않을 수 없다 = 해야 한다)</strong><br>해설: '제가 꼭 해야만 합니까?'라고 묻는 상황입니다. '아니, 네가 할 필요 없어'라고 부담을 덜어주는 1번이 자연스럽습니다."
+            },
+            { 
+                q: "悪いけど、今日の飲み会、パスさせて。", 
+                options: [
+                    "1. ボールをパスするの？", 
+                    "2. えー、また？付き合い悪いなあ。", 
+                    "3. 合格おめでとう。"
+                ], 
+                answer: 1, 
+                desc: "정답: <strong>2번</strong><br>핵심: <strong>パスさせて (빠지게 해줘/건너뛸게)</strong><br>해설: 회식에 불참하겠다는 뜻입니다. '또? 사교성(付き合い)이 안 좋네'라고 불평하는 2번이 문맥상 맞습니다."
+            }
+        ];
+
+        let currentIdx = 0; let score = 0; let timeLeft = 10; let timerInterval;
+        const els = { 
+            progress: document.getElementById('quiz-progress'), 
+            qText: document.getElementById('q-text'), 
+            optionsArea: document.getElementById('options-area'), 
+            feedbackBox: document.getElementById('feedback-box'), 
+            fbTitle: document.getElementById('fb-title'), 
+            fbDesc: document.getElementById('fb-desc'), 
+            btnNext: document.getElementById('btn-next'), 
+            quizView: document.getElementById('quiz-view'), 
+            resultView: document.getElementById('result-view'), 
+            finalScore: document.getElementById('final-score'), 
+            resultComment: document.getElementById('result-comment'), 
+            timerBar: document.getElementById('timer-bar') 
+        };
+
+        function startTimer() {
+            timeLeft = 10;
+            els.timerBar.style.width = '100%';
+            els.timerBar.style.transition = 'none';
+            
+            // Force reflow
+            void els.timerBar.offsetWidth;
+            
+            els.timerBar.style.transition = 'width 10s linear';
+            els.timerBar.style.width = '0%';
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timeOut();
+                }
+            }, 1000);
+        }
+
+        function timeOut() {
+            els.optionsArea.style.pointerEvents = 'none';
+            els.feedbackBox.style.display = 'block';
+            els.feedbackBox.className = 'feedback-box wrong';
+            els.fbTitle.innerText = "⏰ 시간 초과!";
+            // 오답 버튼 스타일링
+            Array.from(els.optionsArea.children).forEach((btn, idx) => {
+                if (idx === quizData[currentIdx].answer) {
+                    btn.style.backgroundColor = '#064e3b';
+                    btn.style.borderColor = '#10b981';
+                } else {
+                    btn.style.opacity = '0.5';
+                }
+            });
+            els.fbDesc.innerHTML = `${quizData[currentIdx].desc}<br><br>즉시응답은 속도가 생명입니다!`;
+            els.btnNext.style.display = 'inline-block';
+            els.quizView.classList.add('shake');
+            setTimeout(() => els.quizView.classList.remove('shake'), 500);
+        }
+
+        function loadQuestion() {
+            clearInterval(timerInterval);
+            const data = quizData[currentIdx];
+            els.progress.innerText = `${currentIdx + 1} / ${quizData.length}`;
+            els.qText.innerText = data.q;
+            els.optionsArea.innerHTML = '';
+            els.feedbackBox.style.display = 'none';
+            els.btnNext.style.display = 'none';
+            els.optionsArea.style.pointerEvents = 'auto';
+
+            data.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn'; 
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(idx, data);
+                els.optionsArea.appendChild(btn);
+            });
+            
+            startTimer();
+        }
+
+        function checkAnswer(selectedIdx, data) {
+            clearInterval(timerInterval);
+            els.timerBar.style.transition = 'none'; // Stop visual timer
+            els.optionsArea.style.pointerEvents = 'none';
+            
+            const isCor = (selectedIdx === data.answer); 
+            
+            if (isCor) {
+                score++;
+                els.feedbackBox.className = 'feedback-box correct';
+                els.fbTitle.innerText = "⭕ 정답입니다!";
+            } else {
+                els.feedbackBox.className = 'feedback-box wrong';
+                els.fbTitle.innerText = "❌ 틀렸습니다!";
+            }
+            
+            // 버튼 색상 처리
+            Array.from(els.optionsArea.children).forEach((btn, idx) => {
+                if (idx === data.answer) {
+                    btn.style.backgroundColor = '#064e3b';
+                    btn.style.borderColor = '#10b981';
+                } else if (idx === selectedIdx && !isCor) {
+                    btn.style.backgroundColor = '#450a0a';
+                    btn.style.borderColor = '#ef4444';
+                } else {
+                    btn.style.opacity = '0.5';
+                }
+            });
+
+            els.feedbackBox.style.display = 'block';
+            els.fbDesc.innerHTML = data.desc;
+            els.btnNext.style.display = 'inline-block';
+        }
+
+        els.btnNext.onclick = () => {
+            currentIdx++;
+            if (currentIdx < quizData.length) loadQuestion();
+            else {
+                els.quizView.style.display = 'none';
+                els.resultView.style.display = 'flex';
+                els.finalScore.innerText = `${score * 10}点`;
+                els.resultComment.innerText = score >= 8 ? "반사신경이 대단하시군요! 청해 만점 도전!" : "조금 더 빠른 판단력이 필요합니다.";
+            }
+        };
+        
+        loadQuestion();
+    });
+    </script>
+</body>
+</html>
