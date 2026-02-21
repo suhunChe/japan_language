@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JLPT N1 헷갈리는 한자 찾기</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Pretendard:wght@500;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- 뒤로가기 버튼 스타일 --- */
+        .back-link {
+            display: inline-block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #d97706; /* 골드 색상 */
+            color: #1c1917; /* 다크 배경색 */
+            text-decoration: none;
+            border-radius: 8px;
+            font-family: 'Pretendard', sans-serif;
+            font-weight: bold;
+            transition: 0.3s;
+            text-align: center;
+        }
+        .back-link:hover { background-color: #b45309; color: white; transform: translateY(-2px); }
+        .top-bar { text-align: center; background-color: #000; padding-top: 10px; }
+
+        /* --- 기존 수훈님 CSS 코드 --- */
+        body { background-color: #000; margin: 0; padding: 0; } /* 전체 다크 모드 */
+
+        .n1-kanji-container {
+            font-family: 'Pretendard', 'Noto Sans JP', sans-serif;
+            max-width: 800px; margin: 20px auto 40px auto; background: #1c1917; border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4); border: 1px solid #44403c; overflow: hidden;
+            color: #f5f5f4; min-height: 600px; display: flex; flex-direction: column;
+            box-sizing: border-box;
+        }
+        .n1-kanji-container * { box-sizing: border-box; }
+
+        .quiz-header { background: linear-gradient(90deg, #b45309, #d97706); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; color: white; font-weight: bold; }
+        .quiz-body { padding: 40px 30px; flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        
+        .question-card { background: #292524; border: 1px solid #57534e; padding: 30px; border-radius: 12px; width: 100%; margin-bottom: 30px; }
+        .kanji-word { font-size: 2.5rem; font-weight: bold; margin-bottom: 15px; color: #fff; letter-spacing: 2px; }
+        .kanji-meaning { font-size: 1.2rem; color: #a8a29e; margin-bottom: 10px; }
+        .q-blank { color: #fcd34d; border-bottom: 3px solid #fcd34d; padding: 0 5px; display: inline-block; min-width: 50px; }
+        
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 500px; margin: 0 auto; }
+        .option-btn { background: #44403c; border: 2px solid #57534e; color: #e7e5e4; padding: 15px; border-radius: 12px; font-size: 3rem; font-weight: bold; cursor: pointer; transition: all 0.2s; font-family: 'Noto Sans JP', sans-serif; }
+        .option-btn:hover { background: #57534e; border-color: #d97706; color: #fcd34d; transform: scale(1.05); }
+        
+        .feedback-box { margin-top: 25px; padding: 20px; border-radius: 10px; text-align: left; width: 100%; max-width: 600px; display: none; background: #0f172a; border-left: 5px solid #3b82f6; animation: slideDown 0.3s; margin-left: auto; margin-right: auto; }
+        .feedback-box.correct { border-left-color: #10b981; background: #064e3b; }
+        .feedback-box.wrong { border-left-color: #ef4444; background: #450a0a; }
+        .fb-title { font-size: 1.2rem; font-weight: 900; margin-bottom: 10px; display: block; }
+        .fb-desc { font-size: 1.15rem; line-height: 1.6; color: #e5e7eb; }
+        
+        .btn-next { margin-top: 20px; background: #d97706; color: white; border: none; padding: 12px 30px; border-radius: 8px; font-size: 1.2rem; font-weight: bold; cursor: pointer; display: none; }
+        .btn-next:hover { background: #b45309; }
+
+        .result-view { display: none; text-align: center; padding: 40px; color: white; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
+        
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 500px) {
+            .options-grid { grid-template-columns: 1fr 1fr; gap: 10px;}
+            .option-btn { font-size: 2.5rem; padding: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <a href="../index.html" class="back-link">🔙 메인 목록으로 돌아가기</a>
+    </div>
+
+    <div class="n1-kanji-container">
+        <div class="quiz-header">
+            <div class="quiz-title">🧐 N1 Kanji Mistake Finder</div>
+            <div class="quiz-progress" id="quiz-progress">1 / 10</div>
+        </div>
+        <div class="quiz-body" id="quiz-view">
+            <div class="question-card">
+                <div class="kanji-meaning" id="q-meaning">의미: 미묘하다 (알 듯 말 듯 하다)</div>
+                <div class="kanji-word" id="q-word"><span class="q-blank">?</span>妙</div>
+            </div>
+            <div class="options-grid" id="options-area"></div>
+            <div class="feedback-box" id="feedback-box">
+                <span class="fb-title" id="fb-title"></span>
+                <div class="fb-desc" id="fb-desc"></div>
+            </div>
+            <button class="btn-next" id="btn-next">다음 문제 ▶</button>
+        </div>
+        <div class="result-view" id="result-view">
+            <div class="score-big" id="final-score" style="font-size: 4rem; font-weight: 900; color: #fcd34d; margin-bottom: 20px;">0점</div>
+            <p id="result-comment" style="margin-bottom:30px; font-size:1.2rem;"></p>
+            <button onclick="location.reload()" style="background:#44403c; color:white; border:1px solid #d97706; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight: bold; font-family: 'Pretendard', sans-serif;">↺ 다시 학습하기</button>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const quizData = [
+            { 
+                meaning: "미묘하다 (알 듯 말 듯 하다)", 
+                wordTemplate: "<span class='q-blank'>?</span>妙", 
+                options: ["微", "徴"], 
+                answer: 0, 
+                desc: "정답: <strong>微妙 (びみょう)</strong><br>'작을 미(微)'를 씁니다. <br>⚠️ 오답: 徴(부를 징) - 徴収(징수), 特徴(특징) 등에 쓰입니다."
+            },
+            { 
+                meaning: "철거하다 (거두어 치우다)", 
+                wordTemplate: "<span class='q-blank'>?</span>去", 
+                options: ["撤", "徹"], 
+                answer: 0, 
+                desc: "정답: <strong>撤去 (てっきょ)</strong><br>'거둘 철(撤)'은 손수변(扌)이 있습니다. <br>⚠️ 오답: 徹(통할 철) - 徹底(철저), 徹夜(철야) 등에 쓰입니다."
+            },
+            { 
+                meaning: "모반 (반역을 꾀함)", 
+                wordTemplate: "<span class='q-blank'>?</span>反", 
+                options: ["某", "謀"], 
+                answer: 1, 
+                desc: "정답: <strong>謀反 (むほん)</strong><br>'꾀할 모(謀)'는 말씀언(言) 변이 있습니다. <br>⚠️ 오답: 某(아무 모) - 某氏(모씨), 某所(모처) 등에 쓰입니다."
+            },
+            { 
+                meaning: "숭배하다 (우러러 공경하다)", 
+                wordTemplate: "<span class='q-blank'>?</span>拝", 
+                options: ["崇", "祟"], 
+                answer: 0, 
+                desc: "정답: <strong>崇拝 (すうはい)</strong><br>'높을 숭(崇)'은 뫼 산(山) 머리입니다. <br>⚠️ 오답: 祟(빌 수/재앙) - 祟り(타타리/재앙) 등에 쓰입니다. (보일 시示 변)"
+            },
+            { 
+                meaning: "조치 (일을 처리함)", 
+                wordTemplate: "<span class='q-blank'>?</span>置", 
+                options: ["措", "錯"], 
+                answer: 0, 
+                desc: "정답: <strong>措置 (そち)</strong><br>'둘 조(措)'는 손수변(扌)입니다. <br>⚠️ 오답: 錯(섞일 착) - 錯覚(착각), 錯乱(착란) 등에 쓰입니다."
+            },
+            { 
+                meaning: "선율 (멜로디)", 
+                wordTemplate: "<span class='q-blank'>?</span>律", 
+                options: ["旋", "施"], 
+                answer: 0, 
+                desc: "정답: <strong>旋律 (せんりつ)</strong><br>'돌 선(旋)'을 사용합니다. <br>⚠️ 오답: 施(베풀 시) - 施設(시설), 実施(실시) 등에 쓰입니다."
+            },
+            { 
+                meaning: "분개하다 (몹시 성내다)", 
+                wordTemplate: "<span class='q-blank'>?</span>慨", 
+                options: ["墳", "憤"], 
+                answer: 1, 
+                desc: "정답: <strong>憤慨 (ふんがい)</strong><br>'결 낼 분(憤)'은 마음심(忄) 변이 있습니다. 감정과 관련됩니다. <br>⚠️ 오답: 墳(무덤 분) - 古墳(고분) 등에 쓰입니다."
+            },
+            { 
+                meaning: "요코즈나 (씨름의 천하장사/굵은 밧줄)", 
+                wordTemplate: "横<span class='q-blank'>?</span>", 
+                options: ["綱", "網"], 
+                answer: 0, 
+                desc: "정답: <strong>横綱 (よこづな)</strong><br>'벼리 강(綱)'은 밧줄을 의미합니다. <br>⚠️ 오답: 網(그물 망) - 通信網(통신망) 등에 쓰입니다."
+            },
+            { 
+                meaning: "유도하다 (이끌다)", 
+                wordTemplate: "<span class='q-blank'>?</span>導", 
+                options: ["透", "誘"], 
+                answer: 1, 
+                desc: "정답: <strong>誘導 (ゆうどう)</strong><br>'꿸 유(誘)'는 말씀언(言) 변입니다. <br>⚠️ 오답: 透(투명할 투) - 透明(투명), 浸透(침투) 등에 쓰입니다."
+            },
+            { 
+                meaning: "시녀 (모시는 여자)", 
+                wordTemplate: "<span class='q-blank'>?</span>女", 
+                options: ["侍", "待"], 
+                answer: 0, 
+                desc: "정답: <strong>侍女 (じじょ)</strong><br>'모실 시(侍)'는 사람인(イ) 변에 절 사(寺)입니다. <br>⚠️ 오답: 待(기다릴 대) - 招待(초대), 待機(대기) 등에 쓰입니다."
+            }
+        ];
+
+        let currentIdx = 0; let score = 0;
+        const els = { 
+            progress: document.getElementById('quiz-progress'), 
+            meaning: document.getElementById('q-meaning'), 
+            word: document.getElementById('q-word'), 
+            optionsArea: document.getElementById('options-area'), 
+            feedbackBox: document.getElementById('feedback-box'), 
+            fbTitle: document.getElementById('fb-title'), 
+            fbDesc: document.getElementById('fb-desc'), 
+            btnNext: document.getElementById('btn-next'), 
+            quizView: document.getElementById('quiz-view'), 
+            resultView: document.getElementById('result-view'), 
+            finalScore: document.getElementById('final-score'), 
+            resultComment: document.getElementById('result-comment') 
+        };
+
+        function loadQuestion() {
+            const data = quizData[currentIdx];
+            els.progress.innerText = `${currentIdx + 1} / ${quizData.length}`;
+            els.meaning.innerText = `의미: ${data.meaning}`;
+            els.word.innerHTML = data.wordTemplate;
+            els.optionsArea.innerHTML = '';
+            els.feedbackBox.style.display = 'none';
+            els.btnNext.style.display = 'none';
+            
+            data.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn'; 
+                btn.innerText = opt;
+                btn.onclick = () => {
+                    const isCor = (idx === data.answer);
+                    if(isCor) score++;
+                    els.feedbackBox.style.display = 'block';
+                    els.feedbackBox.className = `feedback-box ${isCor ? 'correct' : 'wrong'}`;
+                    els.fbTitle.innerText = isCor ? "⭕ Correct" : "❌ Incorrect";
+                    els.fbDesc.innerHTML = data.desc;
+                    els.btnNext.style.display = 'inline-block';
+                    els.optionsArea.style.pointerEvents = 'none';
+
+                    // 오답일 경우 정답 버튼 강조
+                    if (!isCor) {
+                        btn.style.backgroundColor = '#450a0a';
+                        btn.style.borderColor = '#ef4444';
+                        els.optionsArea.children[data.answer].style.backgroundColor = '#064e3b';
+                        els.optionsArea.children[data.answer].style.borderColor = '#10b981';
+                    } else {
+                        btn.style.backgroundColor = '#064e3b';
+                        btn.style.borderColor = '#10b981';
+                    }
+                };
+                els.optionsArea.appendChild(btn);
+            });
+            els.optionsArea.style.pointerEvents = 'auto';
+        }
+
+        els.btnNext.onclick = () => {
+            currentIdx++;
+            if (currentIdx < quizData.length) loadQuestion();
+            else {
+                els.quizView.style.display = 'none';
+                els.resultView.style.display = 'flex';
+                els.finalScore.innerText = `${(score/quizData.length)*100}점`;
+                els.resultComment.innerText = score >= 8 ? "매직아이급 한자 식별 능력입니다! 합격!" : "비슷한 한자에 속지 않도록 주의하세요.";
+            }
+        };
+        
+        loadQuestion();
+    });
+    </script>
+</body>
+</html>
