@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JLPT N5 종합 모의고사</title>
+    
+    <style>
+        /* --- 뒤로가기 버튼 스타일 --- */
+        .back-link {
+            display: inline-block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #34495e;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+            font-weight: bold;
+            transition: 0.3s;
+            text-align: center;
+        }
+        .back-link:hover { background-color: #2c3e50; transform: translateY(-2px); }
+        .top-bar { text-align: center; background-color: #f4f7f6; padding-top: 10px; }
+
+        /* --- 기존 수훈님 CSS 코드 --- */
+        /* 7탄 전용 스타일 (변수 충돌 방지용 접미사 -7 적용) */
+        #jp-final-wrapper-7 {
+            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+            background-color: #2c3e50;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center; /* 오타 수정됨 */
+            padding: 40px 20px;
+            border-radius: 10px;
+            margin: 0 auto 30px auto; /* 중앙 정렬 */
+            position: relative;
+            --max-width: 600px;
+        }
+
+        #jp-final-wrapper-7 .quiz-container {
+            background-color: #34495e;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            text-align: center;
+            width: 100%;
+            max-width: var(--max-width);
+            position: relative;
+            border: 2px solid #f1c40f; /* 골드 테두리 */
+            box-sizing: border-box;
+        }
+
+        .final-badge-7 {
+            background: #f1c40f; color: #2c3e50; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 14px; display: inline-block; margin-bottom: 10px;
+        }
+
+        .game-title-7 { margin: 0 0 5px 0; font-size: 28px; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        .game-subtitle-7 { font-size: 16px; color: #bdc3c7; margin-bottom: 25px; }
+
+        /* 진행 상태바 */
+        .progress-bar-container-7 { width: 100%; background-color: rgba(0,0,0,0.3); height: 10px; border-radius: 5px; margin-bottom: 20px; overflow: hidden; }
+        .progress-bar-fill-7 { height: 100%; background-color: #2ecc71; width: 0%; transition: width 0.3s ease; }
+
+        /* 문제 영역 */
+        .question-card-7 { background: rgba(255,255,255,0.1); padding: 25px; border-radius: 12px; margin-bottom: 20px; min-height: 130px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .category-label-7 { font-size: 14px; color: #f39c12; margin-bottom: 10px; font-weight: bold; letter-spacing: 1px; }
+        .question-text-7 { font-size: 28px; font-weight: bold; line-height: 1.4; margin-bottom: 10px; }
+        .question-sub-7 { font-size: 16px; color: #bdc3c7; }
+
+        /* 해설 박스 */
+        .rationale-box-7 { display: none; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: left; line-height: 1.5; font-size: 15px; color: #fff; animation: fadeIn 0.3s; }
+        .rationale-correct-7 { background-color: #27ae60; border: 1px solid #2ecc71; }
+        .rationale-wrong-7 { background-color: #c0392b; border: 1px solid #e74c3c; }
+
+        /* 보기 버튼 Grid */
+        .options-grid-7 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .opt-btn-7 { background-color: #ecf0f1; color: #2c3e50; border: none; padding: 15px; font-size: 16px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: all 0.2s; }
+        .opt-btn-7:hover { background-color: #bdc3c7; transform: translateY(-2px); }
+        .opt-btn-7.correct { background-color: #2ecc71 !important; color: white; }
+        .opt-btn-7.wrong { background-color: #e74c3c !important; color: white; opacity: 0.5; }
+        
+        /* 다음 문제 버튼 */
+        .next-btn-7 { display: none; width: 100%; margin-top: 20px; padding: 15px; background-color: #3498db; color: white; font-size: 18px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; animation: fadeIn 0.3s; }
+        .next-btn-7:hover { background-color: #2980b9; }
+
+        .disabled-area { pointer-events: none; }
+
+        /* 결과 화면 */
+        #resultScreen-7 { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(44, 62, 80, 0.98); border-radius: 15px; flex-direction: column; align-items: center; justify-content: center; z-index: 20; }
+        .score-circle-7 { width: 150px; height: 150px; border-radius: 50%; border: 5px solid #f1c40f; display: flex; flex-direction: column; justify-content: center; align-items: center; margin: 20px 0; background: rgba(0,0,0,0.3); }
+        .score-num-7 { font-size: 50px; font-weight: bold; color: #fff; line-height: 1; }
+        .score-label-7 { font-size: 14px; color: #bdc3c7; margin-top: 5px; }
+        
+        .pass-stamp-7 { font-size: 30px; font-weight: 900; padding: 10px 30px; border: 3px solid; border-radius: 10px; margin-bottom: 20px; transform: rotate(-5deg); }
+        .pass-7 { color: #2ecc71; border-color: #2ecc71; }
+        .fail-7 { color: #e74c3c; border-color: #e74c3c; }
+
+        .restart-btn-7 { padding: 12px 30px; font-size: 18px; background-color: #3498db; color: white; border: none; border-radius: 8px; cursor: pointer; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        @media (max-width: 500px) { .options-grid-7 { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body style="background-color: #f4f7f6; margin: 0; padding: 0;">
+
+    <div class="top-bar">
+        <a href="../index.html" class="back-link">🔙 메인 목록으로 돌아가기</a>
+    </div>
+
+    <div id="jp-final-wrapper-7">
+        <div class="quiz-container">
+            <div class="final-badge-7">Final Test</div>
+            <h2 class="game-title-7">JLPT N5 종합 모의고사</h2>
+            <div class="game-subtitle-7">20문제 랜덤 출제 / 60점 이상 합격</div>
+
+            <div class="progress-bar-container-7">
+                <div class="progress-bar-fill-7" id="progressBar-7"></div>
+            </div>
+
+            <div class="question-card-7">
+                <div class="category-label-7" id="qCategory-7">CATEGORY</div>
+                <div class="question-text-7" id="qText-7">문제 로딩 중...</div>
+                <div class="question-sub-7" id="qSub-7"></div>
+            </div>
+
+            <div class="rationale-box-7" id="qRationale-7"></div>
+
+            <div class="options-grid-7" id="qOptions-7"></div>
+
+            <button id="btnNext-7" class="next-btn-7" onclick="JpQuiz7.nextQuestion()">다음 문제 ▶</button>
+
+            <div id="resultScreen-7">
+                <h2 style="color:white; margin-bottom:10px;">시험 종료</h2>
+                <div class="pass-stamp-7" id="resultStamp-7">합 격</div>
+                
+                <div class="score-circle-7">
+                    <span class="score-num-7" id="finalScore-7">0</span>
+                    <span class="score-label-7">SCORE</span>
+                </div>
+                
+                <div style="color:#bdc3c7; margin-bottom:20px; font-size:14px;" id="resultMsg-7">수고하셨습니다!</div>
+                <button class="restart-btn-7" onclick="JpQuiz7.initTest()">새 문제 풀기 (랜덤)</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // 문제 데이터 (50개 풀)
+            const questionPool = [
+                // [명사]
+                { type: "VOCAB (명사)", q: "ねこ", sub: "뜻으로 알맞은 것은?", opts: ["고양이", "강아지", "새", "물고기"], ans: 0, reason: "'네코(ねこ)'는 고양이를 뜻합니다. 강아지는 '이누(いぬ)'입니다." },
+                { type: "VOCAB (명사)", q: "いす", sub: "뜻으로 알맞은 것은?", opts: ["의자", "책상", "창문", "시계"], ans: 0, reason: "'이스(いす)'는 의자입니다. 책상은 '츠쿠에(つくえ)'입니다." },
+                { type: "VOCAB (명사)", q: "とけい", sub: "뜻으로 알맞은 것은?", opts: ["시계", "지도", "가방", "지갑"], ans: 0, reason: "'토케이(とけい)'는 시계입니다." },
+                { type: "VOCAB (명사)", q: "みず", sub: "뜻으로 알맞은 것은?", opts: ["물", "불", "돈", "흙"], ans: 0, reason: "'미즈(みず)'는 물입니다." },
+                { type: "VOCAB (명사)", q: "じてんしゃ", sub: "뜻으로 알맞은 것은?", opts: ["자전거", "자동차", "전철", "비행기"], ans: 0, reason: "'지텐샤(じてんしゃ)'는 자전거입니다." },
+
+                // [동사]
+                { type: "VOCAB (동사)", q: "たべる", sub: "뜻으로 알맞은 것은?", opts: ["먹다", "마시다", "보다", "자다"], ans: 0, reason: "'타베루(たべる)'는 '먹다'입니다." },
+                { type: "VOCAB (동사)", q: "いく", sub: "뜻으로 알맞은 것은?", opts: ["가다", "오다", "돌아가다", "일어나다"], ans: 0, reason: "'이쿠(いく)'는 '가다'입니다." },
+                { type: "VOCAB (동사)", q: "よむ", sub: "뜻으로 알맞은 것은?", opts: ["읽다", "쓰다", "듣다", "말하다"], ans: 0, reason: "'요무(よむ)'는 '읽다'입니다." },
+                { type: "VOCAB (동사)", q: "およぐ", sub: "뜻으로 알맞은 것은?", opts: ["수영하다", "달리다", "걷다", "놀다"], ans: 0, reason: "'오요구(およぐ)'는 '헤엄치다/수영하다'입니다." },
+                { type: "VOCAB (동사)", q: "わかる", sub: "뜻으로 알맞은 것은?", opts: ["알다(이해)", "모르다", "잊다", "생각하다"], ans: 0, reason: "'와카루(わかる)'는 내용을 이해하거나 '알다'라는 뜻입니다." },
+
+                // [형용사]
+                { type: "VOCAB (형용사)", q: "おいしい", sub: "뜻으로 알맞은 것은?", opts: ["맛있다", "맛없다", "비싸다", "맵다"], ans: 0, reason: "'오이시이(おいしい)'는 '맛있다'입니다." },
+                { type: "VOCAB (형용사)", q: "あつい", sub: "뜻으로 알맞은 것은?", opts: ["덥다/뜨겁다", "춥다", "시원하다", "따뜻하다"], ans: 0, reason: "'아츠이(あつい)'는 덥거나 뜨겁다는 뜻입니다." },
+                { type: "VOCAB (형용사)", q: "たのしい", sub: "뜻으로 알맞은 것은?", opts: ["즐겁다", "슬프다", "무섭다", "지루하다"], ans: 0, reason: "'타노시이(たのしい)'는 '즐겁다'입니다." },
+                { type: "VOCAB (형용사)", q: "しずかだ", sub: "뜻으로 알맞은 것은?", opts: ["조용하다", "시끄럽다", "유명하다", "친절하다"], ans: 0, reason: "'시즈카다(しずかだ)'는 '조용하다'라는 나형용사입니다." },
+                { type: "VOCAB (형용사)", q: "すきだ", sub: "뜻으로 알맞은 것은?", opts: ["좋아하다", "싫어하다", "잘하다", "못하다"], ans: 0, reason: "'스키다(すきだ)'는 '좋아하다'입니다." },
+
+                // [한자]
+                { type: "KANJI (한자)", q: "一万円", sub: "올바른 발음은?", opts: ["いちまんえん", "ひゃくまんえん", "いちせんえん", "じゅうまんえん"], ans: 0, reason: "一(이치) + 万(만) + 円(엔) = 이치만엔입니다." },
+                { type: "KANJI (한자)", q: "学生", sub: "올바른 발음은?", opts: ["がくせい", "せんせい", "がっこう", "だいがく"], ans: 0, reason: "学生은 '가쿠세이(학생)'라고 읽습니다." },
+                { type: "KANJI (한자)", q: "今日", sub: "올바른 발음은?", opts: ["きょう", "きのう", "あした", "いま"], ans: 0, reason: "今日는 '쿄-(오늘)'라고 읽습니다." },
+                { type: "KANJI (한자)", q: "食べる", sub: "올바른 발음은?", opts: ["たべる", "のむ", "みる", "きく"], ans: 0, reason: "食는 '먹을 식'자로, 훈독은 '타베루'입니다." },
+                { type: "KANJI (한자)", q: "右", sub: "올바른 발음은?", opts: ["みぎ", "ひだり", "うえ", "した"], ans: 0, reason: "右는 '미기(오른쪽)'입니다." },
+                { type: "KANJI (한자)", q: "聞く", sub: "올바른 발음은?", opts: ["きく", "かく", "あく", "ひく"], ans: 0, reason: "聞く는 '키쿠(듣다)'라고 읽습니다." },
+                { type: "KANJI (한자)", q: "新しい", sub: "올바른 발음은?", opts: ["あたらしい", "ふるい", "うれしい", "いそがしい"], ans: 0, reason: "新는 '새 신'자로, '아타라시이'라고 읽습니다." },
+
+                // [문법]
+                { type: "GRAMMAR (문법)", q: "私は 学生______。", sub: "빈칸에 알맞은 말은?", opts: ["です", "ます", "います", "あります"], ans: 0, reason: "'학생입니다'는 명사 뒤에 '데스(です)'를 씁니다." },
+                { type: "GRAMMAR (문법)", q: "ご飯______ 食べます。", sub: "알맞은 조사는?", opts: ["を", "が", "は", "に"], ans: 0, reason: "목적어(~을/를) 뒤에는 조사 '오(を)'를 씁니다." },
+                { type: "GRAMMAR (문법)", q: "学校______ 行きます。", sub: "알맞은 조사는?", opts: ["へ", "を", "が", "で"], ans: 0, reason: "방향(~으로/에)을 나타낼 때는 '에(へ)'를 씁니다." },
+                { type: "GRAMMAR (문법)", q: "バス______ 来ました。", sub: "알맞은 조사는?", opts: ["で", "に", "を", "が"], ans: 0, reason: "교통수단(~으로) 뒤에는 조사 '데(で)'를 씁니다." },
+                { type: "GRAMMAR (문법)", q: "机の上に 本が ______。", sub: "알맞은 말은?", opts: ["あります", "います", "です", "します"], ans: 0, reason: "사물(책)이 있다는 '아리마스(あります)'를 씁니다." },
+                { type: "GRAMMAR (문법)", q: "いっしょに ______。", sub: "권유형으로 알맞은 것은?", opts: ["いきませんか", "いきますか", "いきます", "いってください"], ans: 0, reason: "권유할 때는 부정의문문 '~마셍카(가지 않겠습니까)'가 자연스럽습니다." },
+                { type: "GRAMMAR (문법)", q: "これを ______ ください。", sub: "빈칸에 알맞은 말은?", opts: ["かいて", "かく", "かき", "かきます"], ans: 0, reason: "~해 주세요는 '테형' + 쿠다사이입니다. 쓰다는 '카이테'입니다." },
+                { type: "GRAMMAR (문법)", q: "昨日、勉強 ______。", sub: "과거형으로 알맞은 것은?", opts: ["しました", "します", "しません", "してください"], ans: 0, reason: "어제(키노우) 일이므로 과거형 '시마시타'가 정답입니다." },
+
+                // [회화]
+                { type: "CONVERSATION", q: "아침 인사", sub: "알맞은 일본어는?", opts: ["おはようございます", "こんにちは", "こんばんは", "さようなら"], ans: 0, reason: "아침 인사는 '오하요-고자이마스'입니다." },
+                { type: "CONVERSATION", q: "잘 먹겠습니다", sub: "알맞은 일본어는?", opts: ["いただきます", "ごちそうさま", "いらっしゃいませ", "ただいま"], ans: 0, reason: "식전 인사는 '이타다키마스'입니다." },
+                { type: "CONVERSATION", q: "다녀오겠습니다", sub: "알맞은 일본어는?", opts: ["いってきます", "いってらっしゃい", "おかえりなさい", "しつれいします"], ans: 0, reason: "나갈 때는 '잇테키마스'라고 합니다." },
+                { type: "CONVERSATION", q: "감사합니다", sub: "알맞은 일본어는?", opts: ["ありがとうございます", "すみません", "おめでとう", "どういたしまして"], ans: 0, reason: "감사 표현은 '아리가토-고자이마스'입니다." },
+                { type: "CONVERSATION", q: "처음 뵙겠습니다", sub: "알맞은 일본어는?", opts: ["はじめまして", "よろしく", "こんばんは", "おげんきですか"], ans: 0, reason: "첫 인사는 '하지메마시테'입니다." },
+
+                // [기타]
+                { type: "GRAMMAR (지시어)", q: "______ は なんですか。", sub: "이것은 무엇입니까?", opts: ["これ", "ここ", "この", "こちら"], ans: 0, reason: "사물을 가리키는 '이것'은 '코레(これ)'입니다." },
+                { type: "VOCAB (숫자)", q: "三つ", sub: "읽는 법은?", opts: ["みっつ", "ふたつ", "ひとつ", "よっつ"], ans: 0, reason: "세 개는 '밋츠(みっつ)'라고 읽습니다." },
+                { type: "VOCAB (요일)", q: "月曜日", sub: "읽는 법은?", opts: ["げつようび", "かようび", "すいようび", "きんようび"], ans: 0, reason: "월요일은 '게츠요-비'입니다." },
+                { type: "CONVERSATION", q: "얼마입니까?", sub: "일본어로 알맞은 것은?", opts: ["いくらですか", "いくつですか", "なんじですか", "だれですか"], ans: 0, reason: "가격은 '이쿠라(얼마)'로 묻습니다." },
+                { type: "CONVERSATION", q: "화장실은 어디입니까?", sub: "일본어로 알맞은 것은?", opts: ["トイレはどこですか", "トイレはどれですか", "トイレはだれですか", "トイレはいつですか"], ans: 0, reason: "장소를 물을 때는 '도코(어디)'입니다." }
+            ];
+
+            let quizList = [];
+            let currentIdx = 0;
+            let score = 0;
+            const TOTAL_QUESTIONS = 20;
+
+            const elQCat = document.getElementById('qCategory-7');
+            const elQText = document.getElementById('qText-7');
+            const elQSub = document.getElementById('qSub-7');
+            const elRationale = document.getElementById('qRationale-7');
+            const elOpts = document.getElementById('qOptions-7');
+            const elBar = document.getElementById('progressBar-7');
+            const elRes = document.getElementById('resultScreen-7');
+            const elNextBtn = document.getElementById('btnNext-7');
+
+            function shuffle(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
+            function initTest() {
+                let shuffledPool = shuffle([...questionPool]);
+                quizList = shuffledPool.slice(0, TOTAL_QUESTIONS);
+                
+                currentIdx = 0;
+                score = 0;
+                elRes.style.display = 'none';
+                loadQuestion();
+            }
+
+            function loadQuestion() {
+                if (currentIdx >= TOTAL_QUESTIONS) {
+                    finishTest();
+                    return;
+                }
+
+                const data = quizList[currentIdx];
+                const progress = ((currentIdx) / TOTAL_QUESTIONS) * 100;
+                elBar.style.width = `${progress}%`;
+
+                elQCat.innerText = data.type;
+                elQText.innerText = data.q;
+                elQSub.innerText = data.sub;
+
+                elRationale.style.display = 'none';
+                elRationale.className = 'rationale-box-7'; 
+                elNextBtn.style.display = 'none';
+
+                elOpts.innerHTML = '';
+                elOpts.classList.remove('disabled-area');
+                
+                let optIndices = [0, 1, 2, 3];
+                optIndices = shuffle(optIndices);
+
+                optIndices.forEach(idx => {
+                    const btn = document.createElement('button');
+                    btn.className = 'opt-btn-7';
+                    btn.innerText = data.opts[idx];
+                    const isCorrect = (idx === data.ans);
+                    btn.onclick = () => checkAnswer(btn, isCorrect, data);
+                    elOpts.appendChild(btn);
+                });
+            }
+
+            function checkAnswer(btn, isCorrect, data) {
+                elOpts.classList.add('disabled-area');
+                elRationale.style.display = 'block';
+
+                if (isCorrect) {
+                    btn.classList.add('correct');
+                    score += 5;
+                    elRationale.classList.add('rationale-correct-7');
+                    elRationale.innerHTML = `<span style="font-weight:bold;">⭕ 정답입니다!</span><br>${data.reason}`;
+                } else {
+                    btn.classList.add('wrong');
+                    const allBtns = elOpts.querySelectorAll('.opt-btn-7');
+                    const correctTxt = data.opts[0]; 
+                    allBtns.forEach(b => {
+                        if (b.innerText === correctTxt) b.classList.add('correct');
+                    });
+                    elRationale.classList.add('rationale-wrong-7');
+                    elRationale.innerHTML = `<span style="font-weight:bold;">❌ 틀렸습니다.</span><br>정답: ${correctTxt}<br>${data.reason}`;
+                }
+
+                elNextBtn.style.display = 'block';
+            }
+
+            function nextQuestion() {
+                currentIdx++;
+                loadQuestion();
+            }
+
+            function finishTest() {
+                elBar.style.width = '100%';
+                const finalScore = score;
+                document.getElementById('finalScore-7').innerText = finalScore;
+                
+                const stamp = document.getElementById('resultStamp-7');
+                const msg = document.getElementById('resultMsg-7');
+
+                if (finalScore >= 80) {
+                    stamp.innerText = "고득점 합격";
+                    stamp.className = "pass-stamp-7 pass-7";
+                    msg.innerText = "축하합니다! N5 마스터 등급입니다! 🎉";
+                } else if (finalScore >= 60) {
+                    stamp.innerText = "합 격";
+                    stamp.className = "pass-stamp-7 pass-7";
+                    msg.innerText = "합격입니다! N4에 도전해보세요. 👍";
+                } else {
+                    stamp.innerText = "불합격";
+                    stamp.className = "pass-stamp-7 fail-7";
+                    msg.innerText = "조금 더 복습이 필요합니다. 다시 도전하세요! 💪";
+                }
+
+                elRes.style.display = 'flex';
+            }
+
+            window.JpQuiz7 = {
+                initTest: initTest,
+                nextQuestion: nextQuestion
+            };
+
+            initTest();
+        })();
+    </script>
+</body>
+</html>
