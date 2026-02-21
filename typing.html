@@ -5,6 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>일본어 타자 연습 게임</title>
     <style>
+        /* --- 배경 및 뒤로가기 버튼 스타일 --- */
+        body {
+            background-color: #1a252f; /* 전체 배경을 어둡게 */
+            margin: 0;
+            padding: 0;
+        }
+        .top-bar { 
+            text-align: center; 
+            padding-top: 20px; 
+        }
+        .back-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #3498db; 
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .back-link:hover { 
+            background-color: #2980b9; 
+            transform: translateY(-2px); 
+        }
+
         /* 1. 게임 전용 래퍼 */
         #jp-typing-wrapper {
             font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
@@ -13,10 +39,10 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center; /* 오타 수정: justify_content -> justify-content */
+            justify-content: center;
             padding: 40px 20px;
             border-radius: 10px;
-            margin: 30px auto; /* 중앙 정렬을 위해 auto 추가 */
+            margin: 20px auto 40px auto; 
             position: relative;
             
             /* 변수 설정 */
@@ -219,6 +245,10 @@
     </style>
 </head>
 <body>
+
+<div class="top-bar">
+    <a href="index.html" class="back-link">🔙 메인 목록으로 돌아가기</a>
+</div>
 
 <div id="jp-typing-wrapper">
     <div class="game-container">
