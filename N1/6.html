@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JLPT N1 파이널 모의고사</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Pretendard:wght@500;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- 뒤로가기 버튼 스타일 --- */
+        .back-link {
+            display: inline-block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #d97706; /* 골드 색상 */
+            color: #1c1917; /* 다크 배경색 */
+            text-decoration: none;
+            border-radius: 8px;
+            font-family: 'Pretendard', sans-serif;
+            font-weight: bold;
+            transition: 0.3s;
+            text-align: center;
+        }
+        .back-link:hover { background-color: #b45309; color: white; transform: translateY(-2px); }
+        .top-bar { text-align: center; background-color: #000; padding-top: 10px; }
+
+        /* --- 기존 수훈님 CSS 코드 --- */
+        body { background-color: #000; margin: 0; padding: 0; } /* 전체 다크 모드 */
+
+        /* 메인 컨테이너 */
+        .n1-final-container {
+            font-family: 'Pretendard', 'Noto Sans JP', sans-serif;
+            max-width: 800px; margin: 20px auto 40px auto;
+            background: #1c1917; border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            border: 1px solid #44403c; overflow: hidden;
+            color: #f5f5f4; min-height: 700px; display: flex; flex-direction: column; position: relative;
+            box-sizing: border-box;
+        }
+        .n1-final-container * { box-sizing: border-box; }
+        
+        /* 폭죽 캔버스 */
+        #confetti-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 999; display: none; }
+        
+        .quiz-header { background: linear-gradient(90deg, #b45309, #d97706); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .q-badge { background: #000; color: #fcd34d; padding: 5px 12px; border-radius: 6px; font-weight: bold; font-size: 0.9rem; }
+        .timer { font-size: 1.2rem; font-weight: 800; color: #fff; background: rgba(0,0,0,0.3); padding: 5px 15px; border-radius: 8px; }
+
+        .progress-bar-bg { width: 100%; height: 6px; background: #44403c; }
+        .progress-bar { width: 0%; height: 100%; background: #fcd34d; transition: width 0.3s; }
+
+        .quiz-body { padding: 40px 30px; flex-grow: 1; display: flex; flex-direction: column; align-items: center; overflow-y: auto; }
+        
+        .question-card { background: #292524; border: 1px solid #57534e; padding: 25px; border-radius: 12px; width: 100%; margin-bottom: 25px; text-align: left; }
+        .q-text { font-size: 1.3rem; line-height: 1.6; color: #fff; margin-bottom: 15px; }
+        .q-context { background: #0f172a; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-size: 1.1rem; line-height: 1.7; color: #cbd5e1; border-left: 4px solid #fcd34d; }
+        
+        .options-grid { display: grid; grid-template-columns: 1fr; gap: 12px; width: 100%; }
+        .option-btn { background: #44403c; border: 2px solid #57534e; color: #e7e5e4; padding: 15px; border-radius: 10px; font-size: 1.1rem; cursor: pointer; transition: all 0.2s; text-align: left; }
+        .option-btn:hover { border-color: #d97706; color: #fcd34d; background: #57534e; }
+        
+        .result-view { display: none; flex-direction: column; align-items: center; padding: 40px 20px; text-align: center; }
+        .stamp { font-size: 4rem; font-weight: 900; border: 6px solid; padding: 10px 20px; border-radius: 10px; transform: rotate(-15deg); margin-bottom: 20px; opacity: 0; transition: opacity 0.5s; }
+        .stamp.pass { color: #ef4444; border-color: #ef4444; opacity: 1; }
+        .stamp.fail { color: #6b7280; border-color: #6b7280; opacity: 1; }
+        
+        .analysis-table { width: 100%; max-width: 500px; margin: 20px 0; border-collapse: collapse; background: #292524; border-radius: 8px; overflow: hidden; }
+        .analysis-table th, .analysis-table td { padding: 12px; border-bottom: 1px solid #44403c; color: #e7e5e4; text-align: center; }
+        .analysis-table th { background: #44403c; font-weight: bold; }
+        
+        .review-section { width: 100%; text-align: left; margin-top: 30px; }
+        .review-card { background: #292524; padding: 15px; margin-bottom: 15px; border-radius: 8px; border-left: 4px solid #ef4444; }
+        .review-card.correct { border-left-color: #10b981; }
+        .rc-header { font-size: 0.9rem; color: #a8a29e; margin-bottom: 5px; font-weight: bold; }
+        .rc-q { font-weight: bold; margin-bottom: 5px; color: #fff; font-size: 1.1rem; line-height: 1.4; }
+        .rc-exp { font-size: 0.95rem; color: #d6d3d1; margin-top: 8px; padding-top: 8px; border-top: 1px solid #44403c; line-height: 1.5; }
+
+        .btn-start, .btn-restart { background: #d97706; color: white; border: none; padding: 15px 40px; border-radius: 8px; font-size: 1.3rem; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        .btn-start:hover, .btn-restart:hover { background: #b45309; }
+        .start-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 40px; text-align: center; }
+
+        @media (max-width: 500px) {
+            .course-grid { grid-template-columns: 1fr; }
+            .start-title { font-size: 2rem; }
+            .q-text { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <a href="../index.html" class="back-link">🔙 메인 목록으로 돌아가기</a>
+    </div>
+
+    <div class="n1-final-container">
+        <canvas id="confetti-canvas"></canvas>
+        
+        <div id="start-screen" class="start-screen">
+            <h2 style="font-size: 2.5rem; color: #fcd34d; margin-bottom: 10px;">N1 FINAL MOCK EXAM</h2>
+            <p style="font-size: 1.2rem; color: #a8a29e; margin-bottom: 30px;">20분 | 20문항 | 합격컷 60점</p>
+            <button class="btn-start" onclick="startTest()">시험 시작 ▶</button>
+        </div>
+
+        <div id="quiz-screen" style="display:none; flex-direction:column; height:100%;">
+            <div class="quiz-header">
+                <span class="q-badge" id="q-category">종합 모의고사</span>
+                <span class="timer" id="timer">20:00</span>
+            </div>
+            <div class="progress-bar-bg"><div class="progress-bar" id="progress-bar"></div></div>
+            
+            <div class="quiz-body" id="quiz-body">
+                </div>
+        </div>
+
+        <div id="result-view" class="result-view">
+            <div class="stamp" id="result-stamp">合格</div>
+            <div style="font-size: 1.5rem; color: #fff;">최종 점수</div>
+            <div style="font-size: 4rem; font-weight: 900; color: #fcd34d; margin-bottom: 20px;" id="final-score">0점</div>
+            
+            <table class="analysis-table">
+                <thead><tr><th>영역</th><th>점수</th><th>비고</th></tr></thead>
+                <tbody id="analysis-body"></tbody>
+            </table>
+
+            <div class="review-section" id="review-list"></div>
+            <button class="btn-restart" onclick="location.reload()">↺ 다시 도전</button>
+        </div>
+    </div>
+
+    <script>
+    const quizData = [
+        // [문자어휘 8문제]
+        { cat: "문자어휘", q: "彼は極めて<u>巧妙</u>な手口で人を騙した。", options: ["こうみょう", "ごうみょう", "こうゆう", "ごうゆう"], ans: 0, exp: "巧妙(こうみょう): 교묘함. '巧(교)'는 'こう'로 읽습니다." },
+        { cat: "문자어휘", q: "長年の交渉がついに<u>妥結</u>した。", options: ["たけつ", "だけつ", "だきつ", "たきつ"], ans: 1, exp: "妥結(だけつ): 타결. 협상이 성립됨." },
+        { cat: "문자어휘", q: "真相を<u>究明</u>する。", options: ["きゅうめい", "くめい", "きょうめい", "しゅうめい"], ans: 0, exp: "究明(きゅうめい): 규명. 이치를 따져 밝힘." },
+        { cat: "문자어휘", q: "この条約は<u>破棄</u>された。", options: ["はいき", "はき", "へいき", "ひき"], ans: 1, exp: "破棄(はき): 파기. 계약이나 조약을 깨뜨림. (폐기물은 廃棄/はいき)" },
+        { cat: "문자어휘", q: "会社再建のために<u>奔走</u>する。", options: ["ほんそう", "ほうそう", "はんそう", "ぼんそう"], ans: 0, exp: "奔走(ほんそう): 분주. 이리저리 바쁘게 뛰어다님." },
+        { cat: "문자어휘", q: "<u>一概</u>に悪いとは言えない。", options: ["いちがい", "いっかい", "いちごう", "いっかつ"], ans: 0, exp: "一概(いちがい)に: 일개, 일률적으로. 주로 부정 표현과 함께 쓰임." },
+        { cat: "문자어휘", q: "事件の<u>経緯</u>を説明する。", options: ["けいい", "きょうい", "けいど", "けいえい"], ans: 0, exp: "経緯(けいい): 경위. 일이 진행된 과정. (=いきさつ)" },
+        { cat: "문자어휘", q: "<u>潔い</u>態度で罪を認めた。", options: ["いさぎよい", "きよい", "たのもしい", "つつましい"], ans: 0, exp: "潔(いさぎよ)い: 떳떳하다, 미련 없이 깨끗하다." },
+
+        // [문법 8문제]
+        { cat: "문법", q: "こんな重要なこと、私の一存では決め(  )ます。", options: ["かね", "られ", "ざるをえ", "ようがあり"], ans: 0, exp: "Vます+かねる: ~하기 어렵다(불가능). '결정하기 어렵습니다'." },
+        { cat: "문법", q: "彼は天才(  )努力家でもある。", options: ["とあって", "にして", "にあって", "なりに"], ans: 1, exp: "N+にして: ~이자 동시에. '천재이자 동시에 노력가다'." },
+        { cat: "문법", q: "事実を知った(  )、黙っているわけにはいかない。", options: ["そばから", "以上", "手前", "始末"], ans: 1, exp: "～以上: ~한 이상에는. 당연한 의무나 결의." },
+        { cat: "문법", q: "お客様の個人情報は、理由の(  )を問わず開示しません。", options: ["いかん", "かぎり", "うえ", "うち"], ans: 0, exp: "如何(いかん)を問わず: 여하(어떠함)를 불문하고." },
+        { cat: "문법", q: "山頂からの景色は、言葉では言い(  )美しさだった。", options: ["尽くす", "切る", "尽くせない", "切れない"], ans: 2, exp: "Vます+尽くせない: 다 ~할 수 없다. '말로 다 할 수 없는 아름다움'." },
+        { cat: "문법", q: "指導者(  )者、常に模範を示さなければならない。", options: ["たる", "ごとき", "めく", "とも"], ans: 0, exp: "N+たる者: ~된 자, ~의 입장에 있는 사람. 자격이나 입장을 강조." },
+        { cat: "문법", q: "あの映画は、見る(  )価値がある。", options: ["にたえる", "に足る", "にいたる", "にあたる"], ans: 1, exp: "Vる/N+に足る: ~할 만하다, ~할 가치가 있다. '볼 만한 가치'." },
+        { cat: "문법", q: "連絡もなしに休むとは、社会人にある(  )行為だ。", options: ["まじき", "べからざる", "ごとき", "めいた"], ans: 0, exp: "～あるまじき: ~에 있어서는 안 될. '사회인으로서 있을 수 없는 행위'." },
+
+        // [독해 4문제]
+        { cat: "독해", q: "필자의 주장으로 가장 적절한 것은?", context: "현대인은 효율성을 추구하며 늘 바쁘게 살아간다. 그러나 역설적이게도, 진정한 창조성은 '낭비'라고 여겨지는 멍하니 있는 시간, 즉 '공백'에서 탄생한다. 뇌가 쉴 때 비로소 서로 다른 정보들이 연결되기 때문이다.", options: ["효율적인 시간 관리가 창조성의 핵심이다.", "바쁜 현대 사회에서 멍하니 있는 것은 낭비다.", "의도적인 휴식과 공백이 창의력을 낳는다.", "정보의 연결을 위해 끊임없이 학습해야 한다."], ans: 2, exp: "지문의 핵심은 '진정한 창조성은 공백에서 탄생한다'입니다." },
+        { cat: "독해", q: "(  )에 들어갈 접속사는?", context: "일본의 편의점은 단순히 물건을 파는 곳이 아니다. 공과금 수납, 택배 발송, 심지어 행정 서류 발급까지 가능하다. (  ), '사회적 인프라'로서의 기능을 수행하고 있는 것이다.", options: ["すなわち", "ただし", "ところが", "いっぽう"], ans: 0, exp: "すなわち(즉, 다시 말해): 앞의 구체적 사례들을 종합하여 '사회적 인프라'라고 정의하고 있습니다." },
+        { cat: "독해", q: "이 문장이 의미하는 바는?", context: "「情けは人のためならず」라는 속담이 있다. 남을 돕는 것은 결국 돌고 돌아 나 자신에게도 좋은 결과로 돌아온다는 뜻이다.", options: ["남에게 동정을 베푸는 것은 그 사람을 위한 게 아니다.", "남을 도우면 나중에 나에게 이익이 된다.", "남을 돕는 것보다 나 자신을 챙겨야 한다.", "인정은 남을 위해서 베풀어야 한다."], ans: 1, exp: "이 속담은 '남을 위하는 것이 아님(자기를 위함)'이라는 뜻입니다." },
+        { cat: "독해", q: "A사의 전략은 무엇인가?", context: "A사는 신제품 출시에 앞서, 기능을 간소화하고 가격을 낮춘 '라이트 버전'을 먼저 시장에 내놓았다. 이는 소비자의 반응을 미리 살피고, 본 제품에 대한 기대감을 높이기 위한 포석이었다.", options: ["고가 전략으로 브랜드 이미지를 높인다.", "저렴한 체험판으로 시장 반응을 테스트한다.", "모든 기능을 탑재하여 완벽한 제품을 낸다.", "기존 제품을 단종시키고 신제품에 집중한다."], ans: 1, exp: "기능을 간소화하고 가격을 낮춘 라이트 버전을 먼저 내놓아 반응을 살핀다고 했습니다." }
+    ];
+
+    let timerInterval;
+    let timeLeft = 1200; // 20분
+    let userAnswers = {};
+
+    function startTest() {
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('quiz-screen').style.display = 'flex';
+        renderQuiz();
+        startTimer();
+    }
+
+    function startTimer() {
+        const timerEl = document.getElementById('timer');
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            let min = Math.floor(timeLeft / 60);
+            let sec = timeLeft % 60;
+            timerEl.innerText = `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+            if(timeLeft <= 0) finishTest();
+        }, 1000);
+    }
+
+    function renderQuiz() {
+        const qBody = document.getElementById('quiz-body');
+        qBody.innerHTML = '';
+        
+        quizData.forEach((data, idx) => {
+            const card = document.createElement('div');
+            card.className = 'question-card';
+            let contextHtml = data.context ? `<div class="q-context">${data.context}</div>` : '';
+            
+            card.innerHTML = `
+                <div style="margin-bottom:10px;"><span class="q-badge">${data.cat}</span></div>
+                ${contextHtml}
+                <div class="q-text">${idx+1}. ${data.q}</div>
+                <div class="options-grid" id="opts-${idx}"></div>
+            `;
+            qBody.appendChild(card);
+            
+            const optsDiv = card.querySelector(`#opts-${idx}`);
+            data.options.forEach((opt, oIdx) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = `${oIdx + 1}. ${opt}`;
+                btn.onclick = () => selectAnswer(idx, oIdx, btn);
+                optsDiv.appendChild(btn);
+            });
+        });
+        
+        // 제출 버튼
+        const submitBtn = document.createElement('button');
+        submitBtn.className = 'btn-start';
+        submitBtn.innerText = '답안 제출하기';
+        submitBtn.onclick = finishTest;
+        submitBtn.style.alignSelf = 'center';
+        submitBtn.style.marginBottom = '40px';
+        qBody.appendChild(submitBtn);
+    }
+
+    function selectAnswer(qIdx, oIdx, btn) {
+        userAnswers[qIdx] = oIdx;
+        const parent = btn.parentElement;
+        Array.from(parent.children).forEach(c => {
+            c.style.background = '#44403c';
+            c.style.color = '#e7e5e4';
+            c.style.borderColor = '#57534e';
+        });
+        btn.style.background = '#57534e';
+        btn.style.color = '#fcd34d';
+        btn.style.borderColor = '#d97706';
+        
+        // 진행바 업데이트
+        const progress = (Object.keys(userAnswers).length / quizData.length) * 100;
+        document.getElementById('progress-bar').style.width = `${progress}%`;
+    }
+
+    function finishTest() {
+        clearInterval(timerInterval);
+        document.getElementById('quiz-screen').style.display = 'none';
+        document.getElementById('result-view').style.display = 'flex';
+        
+        let score = 0;
+        let stats = { "문자어휘":{t:0, c:0}, "문법":{t:0, c:0}, "독해":{t:0, c:0} };
+        const reviewList = document.getElementById('review-list');
+        
+        quizData.forEach((data, i) => {
+            const userPick = userAnswers[i] !== undefined ? userAnswers[i] : -1;
+            const isCor = (userPick === data.ans);
+            if(isCor) score++;
+            
+            // 통계
+            stats[data.cat].t++;
+            if(isCor) stats[data.cat].c++;
+            
+            // 오답노트
+            const rCard = document.createElement('div');
+            rCard.className = `review-card ${isCor ? 'correct' : ''}`;
+            let userAnsText = userPick === -1 ? "미선택" : data.options[userPick];
+            rCard.innerHTML = `
+                <div class="rc-header">${data.cat} - ${isCor ? '⭕ 정답' : '❌ 오답 (내 답: ' + userAnsText + ')'}</div>
+                <div class="rc-q">${i+1}. ${data.q}</div>
+                <div class="rc-exp">정답: <strong>${data.options[data.ans]}</strong><br>${data.exp}</div>
+            `;
+            reviewList.appendChild(rCard);
+        });
+        
+        const finalScore = score * 5; // 20문제 * 5점 = 100점
+        document.getElementById('final-score').innerText = `${finalScore}점`;
+        
+        // 합격 도장 & 폭죽
+        const stamp = document.getElementById('result-stamp');
+        if(finalScore >= 60) {
+            stamp.innerText = "合格";
+            stamp.className = "stamp pass";
+            playConfetti();
+        } else {
+            stamp.innerText = "不合格";
+            stamp.className = "stamp fail";
+        }
+        
+        // 분석표 채우기
+        const tbody = document.getElementById('analysis-body');
+        for(let k in stats) {
+            if(stats[k].t > 0) {
+                tbody.innerHTML += `<tr><td>${k}</td><td>${stats[k].c} / ${stats[k].t}</td><td>${Math.round(stats[k].c/stats[k].t*100)}%</td></tr>`;
+            }
+        }
+    }
+
+    function playConfetti() {
+        const canvas = document.getElementById('confetti-canvas');
+        canvas.style.display = 'block';
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800; canvas.height = 700;
+        const particles = Array.from({length: 100}, () => ({
+            x: canvas.width/2, y: canvas.height/2,
+            vx: (Math.random()-0.5)*10, vy: (Math.random()-0.5)*10,
+            color: ['#ef4444','#3b82f6','#10b981','#fcd34d'][Math.floor(Math.random()*4)],
+            size: Math.random()*8+2
+        }));
+        function animate() {
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            particles.forEach(p => {
+                p.x+=p.vx; p.y+=p.vy; p.vy+=0.1;
+                ctx.fillStyle = p.color; ctx.fillRect(p.x,p.y,p.size,p.size);
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+    }
+    </script>
+</body>
+</html>
