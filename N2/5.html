@@ -1,0 +1,1491 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JLPT N2 쉐도잉 훈련</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Pretendard:wght@500;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- 뒤로가기 버튼 스타일 --- */
+        .back-link {
+            display: inline-block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #1e3a8a;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-family: 'Pretendard', sans-serif;
+            font-weight: bold;
+            transition: 0.3s;
+            text-align: center;
+        }
+        .back-link:hover { background-color: #4f46e5; transform: translateY(-2px); }
+        .top-bar { text-align: center; background-color: #eff6ff; padding-top: 10px; }
+
+        /* --- 기존 수훈님 CSS 코드 --- */
+        body { background-color: #eff6ff; margin: 0; padding: 0; }
+
+        /* 전체 컨테이너 */
+        .listening-game-v2 {
+            font-family: 'Pretendard', 'Noto Sans JP', sans-serif;
+            max-width: 900px;
+            margin: 0 auto 40px auto;
+            background: #fff; border-radius: 24px;
+            box-shadow: 0 15px 40px rgba(99, 102, 241, 0.15);
+            border: 2px solid #e0e7ff;
+            overflow: hidden; text-align: center;
+            position: relative;
+            min-height: 750px; 
+            display: flex; flex-direction: column;
+            box-sizing: border-box;
+        }
+
+        /* 화면 전환 로직 */
+        .game-screen {
+            display: none; width: 100%; height: 100%;
+            flex-direction: column; flex-grow: 1;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+        .game-screen.active { display: flex; }
+
+        /* [화면 1] 테마 선택 */
+        #view-theme {
+            justify-content: center; align-items: center;
+            background: #eff6ff; padding: 40px 20px;
+        }
+        .intro-title { font-size: 2.5rem; font-weight: 900; color: #1e3a8a; margin-bottom: 10px; }
+        .intro-desc { font-size: 1.2rem; color: #64748b; margin-bottom: 40px; }
+        .theme-list { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 400px; }
+        .theme-btn {
+            background: white; border: none; padding: 20px 30px; border-radius: 20px;
+            font-size: 1.4rem; font-weight: 800; color: #334155; cursor: pointer; text-align: left;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: transform 0.2s, box-shadow 0.2s;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .theme-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); color: #4f46e5; }
+        .theme-icon { font-size: 1.8rem; margin-right: 10px; }
+        .theme-tag { font-size: 0.9rem; padding: 5px 10px; border-radius: 10px; background: #e0e7ff; color: #4338ca; font-weight: bold; }
+
+        /* [화면 2] 게임 헤더 */
+        .game-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+            padding: 15px; 
+            color: white;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; 
+            gap: 8px;
+            border-bottom: 4px solid #312e81;
+        }
+        .game-title { font-size: 1.5rem; font-weight: 800; margin: 0; white-space: nowrap; }
+        
+        /* 중앙 컨트롤 그룹 */
+        .header-controls {
+            display: flex; align-items: center; 
+            gap: 4px; 
+            flex-wrap: wrap; justify-content: center;
+            flex-grow: 1;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 6px 10px; 
+            border-radius: 12px;
+        }
+
+        .page-indicator {
+            background: #e0e7ff; color: #4338ca; 
+            padding: 8px 12px; 
+            border-radius: 8px;
+            font-weight: 800; font-size: 1.2rem; 
+            box-shadow: 0 2px 0 #c7d2fe;
+        }
+
+        .yomi-btn {
+            background: white; border: none; color: #64748b; 
+            padding: 8px 12px; 
+            border-radius: 8px;
+            font-weight: 800; cursor: pointer; font-size: 1.2rem; 
+            display: flex; align-items: center; gap: 4px; 
+            transition: all 0.2s; box-shadow: 0 2px 0 #cbd5e1;
+        }
+        .yomi-btn.active { background: #dbeafe; color: #2563eb; box-shadow: 0 2px 0 #93c5fd; }
+        .yomi-btn:hover { transform: translateY(-1px); }
+
+        .speed-container {
+            display: flex; align-items: center; gap: 4px;
+            background: rgba(0,0,0,0.2); padding: 4px 8px; border-radius: 10px;
+        }
+        
+        .control-label {
+            font-size: 0.95rem; font-weight: 800; color: #e2e8f0; line-height: 1.1; text-align: center; margin-right: 2px;
+        }
+
+        .speed-group { display: flex; gap: 2px; }
+        
+        .speed-btn {
+            border: none; background: transparent; 
+            padding: 6px 8px; border-radius: 6px;
+            font-weight: 800; color: #cbd5e1; cursor: pointer; 
+            transition: all 0.2s; font-size: 1.15rem; 
+        }
+        .speed-btn.active { background: white; color: #4f46e5; box-shadow: 0 2px 2px rgba(0,0,0,0.2); }
+
+        .play-btn {
+            background: #fff; color: #4f46e5; border: none; 
+            padding: 8px 20px; border-radius: 50px;
+            font-size: 1.4rem; font-weight: 900; cursor: pointer;
+            box-shadow: 0 3px 0 #c7d2fe; transition: transform 0.1s;
+            display: flex; align-items: center; gap: 5px;
+        }
+        .play-btn:active { transform: scale(0.95); box-shadow: none; transform: translateY(4px); }
+        .play-btn:hover { background: #f8fafc; }
+
+        .home-btn {
+            background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2);
+            color: white; padding: 8px 14px; border-radius: 10px; cursor: pointer; font-size: 1.1rem; font-weight: bold;
+            transition: background 0.2s; white-space: nowrap;
+        }
+        .home-btn:hover { background: rgba(0,0,0,0.5); }
+
+        /* 문제 영역 */
+        .quiz-area { padding: 40px 25px; flex-grow: 1; position: relative; }
+        
+        .sentence-box {
+            font-size: 2.0rem; line-height: 2.8; color: #1e293b;
+            margin-bottom: 30px; text-align: left; padding: 0 10px; transition: line-height 0.3s;
+        }
+        .hide-yomi rt { display: none; }
+        .hide-yomi .sentence-box { line-height: 2.2; }
+        ruby { ruby-align: center; }
+        rt { font-size: 0.6em; color: #64748b; font-weight: normal; user-select: none; }
+
+        .slot {
+            display: inline-block; min-width: 110px; height: 55px; border-bottom: 4px solid #cbd5e1;
+            margin: 0 6px; vertical-align: bottom; text-align: center; color: #4f46e5; font-weight: bold;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .slot.filled { border-bottom-color: #4f46e5; background-color: #e0e7ff; border-radius: 8px 8px 0 0; }
+        .slot.wrong { border-bottom-color: #ef4444; color: #ef4444; background-color: #fee2e2; animation: shake 0.4s; }
+        .slot.revealed { border-bottom-color: #f59e0b; background-color: #fffbeb; color: #b45309; pointer-events: none; }
+
+        .hint-box {
+            display: none; margin-bottom: 20px; padding: 20px;
+            background-color: #fffbeb; border: 2px dashed #fcd34d; border-radius: 16px;
+            color: #92400e; font-size: 1.3rem; font-weight: bold; text-align: center; animation: fadeIn 0.5s;
+        }
+
+        .word-bank {
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 12px;
+            margin-bottom: 20px; padding: 20px; background: #f8fafc; border-radius: 20px; min-height: 100px;
+        }
+        .word-chip {
+            background: white; border: 2px solid #e2e8f0; padding: 14px 24px; border-radius: 16px;
+            font-size: 1.5rem; font-weight: bold; color: #334155; cursor: pointer; user-select: none;
+            box-shadow: 0 3px 0 #cbd5e1; transition: all 0.2s; line-height: 1.2;
+        }
+        .word-chip:hover { border-color: #4f46e5; color: #4f46e5; transform: translateY(-2px); }
+        .word-chip:active { transform: translateY(0); box-shadow: none; }
+        .word-chip.hidden { visibility: hidden; pointer-events: none; }
+
+        /* 결과 피드백 박스 */
+        .result-box {
+            display: none; margin-top: 10px; padding: 20px;
+            border-radius: 20px; text-align: left;
+            animation: fadeIn 0.5s; height: 100%; overflow-y: auto; padding-bottom: 40px;
+            border: 3px solid transparent; 
+        }
+        .result-box.success { background: #f0fdf4; border-color: #22c55e; }
+        .result-box.success .result-title { color: #166534; }
+        .result-box.fail { background: #fef2f2; border-color: #ef4444; }
+        .result-box.fail .result-title { color: #b91c1c; }
+
+        /* 결과 헤더 */
+        .result-header {
+            text-align: center; margin-bottom: 30px; 
+            line-height: 2.0;
+        }
+        .result-title { 
+            display: inline; 
+            font-size: 2.2rem; 
+            margin-right: 10px; 
+            font-weight: 900; 
+        }
+        .trans-badge {
+            display: inline-block; background: #374151; color: #fff;
+            font-size: 1.3rem; 
+            padding: 5px 12px; border-radius: 8px;
+            margin: 0 10px; font-weight: 800; vertical-align: middle; transform: translateY(-3px);
+        }
+        .trans-text { 
+            display: inline; 
+            font-size: 1.9rem; 
+            color: #1e293b; font-weight: 800; 
+        }
+        
+        /* 학습 섹션 (폰트 확대) */
+        .study-section { margin-top: 30px; padding-top: 20px; border-top: 2px dashed rgba(0,0,0,0.1); }
+        
+        .section-label { 
+            font-size: 1.5rem; 
+            color: #4b5563; font-weight: 900; margin-bottom: 15px; display: block; 
+        }
+        
+        .vocab-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+        
+        .vocab-card {
+            background: white; border: 1px solid rgba(0,0,0,0.1); border-radius: 12px; padding: 15px; text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        
+        .v-word { 
+            font-size: 1.8rem; 
+            font-weight: 800; color: #334151; display: block; line-height: 1.3;
+        }
+        .v-yomi { 
+            font-size: 1.2rem; 
+            color: #64748b; display: block; margin-bottom: 8px; 
+        }
+        .v-mean { 
+            font-size: 1.4rem; 
+            color: #374151; 
+            font-weight: bold; 
+            border-top: 2px solid #f3f4f6; 
+            padding-top: 8px; 
+            line-height: 1.5;  
+            padding-bottom: 5px; 
+            display: block; 
+        }
+
+        .tip-content {
+            background: #fff; border-left: 6px solid #fbbf24; padding: 20px; border-radius: 0 12px 12px 0;
+            font-size: 1.5rem; 
+            color: #374151; line-height: 1.6; font-weight: 600;
+        }
+
+        .next-step-btn {
+            width: 100%; margin-top: 30px; padding: 16px;
+            background: #4f46e5; color: white; border: none; border-radius: 16px;
+            font-size: 1.3rem; font-weight: 800; cursor: pointer;
+            box-shadow: 0 5px 0 #3730a3; transition: all 0.2s;
+        }
+        .next-step-btn:hover { background: #4338ca; transform: translateY(-2px); }
+        .next-step-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        .toast-msg {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: #ffffff; color: #4f46e5; border: 4px solid #818cf8;
+            padding: 20px 40px; border-radius: 60px; font-size: 1.6rem; font-weight: 900;
+            z-index: 100; display: none; box-shadow: 0 15px 40px rgba(79, 70, 229, 0.3); width: 85%; max-width: 400px;
+        }
+
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 결과 화면 */
+        #view-result { justify-content: center; align-items: center; background: #f0f9ff; z-index: 100; }
+        .res-rank { font-size: 6rem; font-weight: 900; margin: 10px 0; text-shadow: 2px 2px 0px rgba(0,0,0,0.1); }
+        .res-score { font-size: 3rem; font-weight: 900; color: #333; margin-bottom: 10px; }
+        .res-text { font-size: 1.6rem; color: #555; margin-bottom: 40px; font-weight: 600; }
+        
+        /* 팝업 효과 */
+        @keyframes floatUp { 
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; } 
+            20% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); } 
+            100% { opacity: 0; transform: translate(-50%, -150%); } 
+        }
+        
+        /* 점수 팝업 */
+        .score-popup { 
+            position: absolute; top: 50%; left: 50%; 
+            font-size: 5rem; font-weight: 900; color: #f59e0b; 
+            text-shadow: 2px 2px 0 #fff; pointer-events: none; z-index: 200; 
+            animation: floatUp 1s ease-out forwards; white-space: nowrap; 
+        }
+
+        /* 콤보 팝업 */
+        .combo-popup {
+            position: absolute; top: 40%; left: 50%; 
+            font-size: 4rem; font-weight: 900; color: #ef4444; 
+            text-shadow: 2px 2px 0 #fff; pointer-events: none; z-index: 205; 
+            animation: floatUp 1s ease-out forwards; white-space: nowrap; 
+        }
+
+        /* 지진 효과 */
+        .shake-active {
+            animation: shake-hard 0.5s;
+            border-color: #ef4444 !important; 
+        }
+        @keyframes shake-hard {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+            40%, 60% { transform: translate3d(6px, 0, 0); }
+        }
+
+        @media (max-width: 600px) {
+            .slot { min-width: 50px; padding: 2px 5px; min-height: 60px; }
+            .ruby-text { font-size: 1.6rem; }
+            .ruby-yomi { font-size: 0.9rem; }
+            .word-btn { padding: 5px 10px; min-height: 65px; }
+            .word-btn .ruby-text { font-size: 1.4rem; }
+            .info-header { padding: 10px; font-size: 0.9rem; justify-content: center; gap: 10px; }
+            .status-group { gap: 10px; width: 100%; justify-content: center; margin-top: 5px; }
+            .hint-text { font-size: 1.3rem; padding: 10px 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <a href="../index.html" class="back-link">🔙 메인 목록으로 돌아가기</a>
+    </div>
+
+    <div class="listening-game-v2" id="game-container">
+        
+        <div id="view-theme" class="game-screen active">
+            <h2 class="intro-title">N2 쉐도잉 훈련</h2>
+            <p class="intro-desc">상황별 테마를 선택하여 학습을 시작하세요!</p>
+            
+            <div class="theme-list">
+                <button class="theme-btn" data-theme="daily">
+                    <span><span class="theme-icon">🏫</span> 일상 / 학교</span>
+                    <span class="theme-tag">Easy</span>
+                </button>
+                <button class="theme-btn" data-theme="business">
+                    <span><span class="theme-icon">💼</span> 비즈니스 / 회사</span>
+                    <span class="theme-tag">Normal</span>
+                </button>
+                <button class="theme-btn" data-theme="travel">
+                    <span><span class="theme-icon">✈️</span> 여행 / 긴급상황</span>
+                    <span class="theme-tag">Hard</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="view-game" class="game-screen">
+            <div class="game-header">
+                <h2 class="game-title">🎧 쉐도잉 & 딕테이션</h2>
+                
+                <div class="header-controls">
+                    <div class="page-indicator" id="page-num">남은 문제 1 / 20</div>
+                    
+                    <button id="btn-toggle-yomi" class="yomi-btn active">あ 요미가나 끄기</button>
+                    
+                    <div class="speed-container">
+                        <span class="control-label">음성<br>속도</span>
+                        <div class="speed-group" id="speed-group">
+                            <button class="speed-btn" data-rate="0.3">0.3x</button>
+                            <button class="speed-btn" data-rate="0.5">0.5x</button>
+                            <button class="speed-btn active" data-rate="1.0">1.0x</button>
+                        </div>
+                    </div>
+                    
+                    <button class="play-btn" id="btn-play">▶ 듣기</button>
+                </div>
+
+                <button id="btn-home" class="home-btn">🏠 처음으로</button>
+            </div>
+
+            <div class="quiz-area">
+                <div id="sentence-display" class="sentence-box"></div>
+                <div id="hint-display" class="hint-box"></div>
+                
+                <div id="word-bank" class="word-bank"></div>
+
+                <div id="result-feedback" class="result-box">
+                    <div class="result-header">
+                        <span id="result-title" class="result-title">🎉 정답</span>
+                        <span class="trans-badge">해석</span>
+                        <span id="korean-trans" class="trans-text"></span>
+                    </div>
+                    
+                    <div class="study-section">
+                        <span class="section-label">📚 핵심 단어장</span>
+                        <div id="result-vocab" class="vocab-grid"></div>
+                    </div>
+
+                    <div class="study-section">
+                        <span class="section-label">💡 원포인트 레슨</span>
+                        <div id="result-tip" class="tip-content"></div>
+                    </div>
+
+                    <button id="btn-next" class="next-step-btn">다음 문제 ▶</button>
+                </div>
+
+                <div id="toast-msg" class="toast-msg">⚠️ 틀렸습니다!</div>
+            </div>
+        </div>
+
+        <div id="view-result" class="game-screen">
+            <h2 style="font-size:2.5rem; color:#1e3a8a; margin-bottom:10px;">Game Over</h2>
+            <div id="res-rank" class="res-rank"></div>
+            <div class="res-score" id="res-score">0점</div>
+            <div id="res-msg" class="res-text"></div>
+            <button class="theme-btn" style="justify-content:center;">🔄 다시하기</button>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // [데이터베이스] 단어장 5개로 확장 (총 60문제)
+        const db = {
+            daily: [
+                {
+                    parts: ["<ruby>掃除<rt>そうじ</rt></ruby>の", "___", "、<ruby>昔<rt>むかし</rt></ruby>の", "___", "が", "___", "きた。"],
+                    answers: ["<ruby>最中<rt>さいちゅう</rt></ruby>に", "アルバム", "<ruby>出<rt>で</rt></ruby>て"],
+                    full: "掃除の最中に、昔のアルバムが出てきた。",
+                    trans: "청소하던 중에, 옛날 앨범이 나왔다.",
+                    vocab: [
+                        {w:"掃除", r:"そうじ", m:"청소"},
+                        {w:"最中に", r:"さいちゅうに", m:"~하던 중에"},
+                        {w:"昔", r:"むかし", m:"옛날/과거"},
+                        {w:"アルバム", r:"", m:"앨범"},
+                        {w:"出てくる", r:"でてくる", m:"나오다/발견되다"}
+                    ],
+                    tip: "'~最中に'는 어떤 동작이 한창 진행되고 있는 도중이라는 의미로, 뒤에는 주로 방해되는 일이 일어납니다."
+                },
+                {
+                    parts: ["<ruby>彼<rt>かれ</rt></ruby>は", "___", "も", "___", "かのように、", "___", "を", "___", "けた。"],
+                    answers: ["<ruby>何<rt>なに</rt></ruby>", "<ruby>知<rt>し</rt></ruby>らない", "<ruby>話<rt>はなし</rt></ruby>", "<ruby>続<rt>つづ</rt></ruby>"],
+                    full: "彼は何も知らないかのように、話を続けた。",
+                    trans: "그는 아무것도 모르는 것처럼 이야기를 계속했다.",
+                    vocab: [
+                        {w:"彼", r:"かれ", m:"그/그 남자"},
+                        {w:"何も", r:"なにも", m:"아무것도"},
+                        {w:"知る", r:"しる", m:"알다"},
+                        {w:"～かのように", r:"", m:"마치 ~인 것처럼"},
+                        {w:"続ける", r:"つづける", m:"계속하다"}
+                    ],
+                    tip: "'~かのように'는 사실은 그렇지 않지만, 마치 그런 것처럼 행동한다는 비유 표현입니다."
+                },
+                {
+                    parts: ["この", "___", "は、", "___", "に", "___", "ない。"],
+                    answers: ["<ruby>料理<rt>りょうり</rt></ruby>", "おいしい", "<ruby>違<rt>ちが</rt></ruby>い"],
+                    full: "この料理は、おいしいに違いない。",
+                    trans: "이 요리는 맛있는 게 틀림없다.",
+                    vocab: [
+                        {w:"料理", r:"りょうり", m:"요리"},
+                        {w:"美味しい", r:"おいしい", m:"맛있다"},
+                        {w:"～に違いない", r:"にちがいない", m:"~임에 틀림없다"},
+                        {w:"この", r:"", m:"이 (지시사)"}
+                    ],
+                    tip: "'~に違いない'는 말하는 사람의 강한 확신을 나타내는 표현입니다."
+                },
+                {
+                    parts: ["<ruby>将<rt>しょう</rt></ruby><ruby>来<rt>らい</rt></ruby>のために、", "___", "おこうと", "___", "。"],
+                    answers: ["<ruby>貯金<rt>ちょきん</rt></ruby>して", "<ruby>思<rt>おも</rt></ruby>う"],
+                    full: "将来のために、貯金しておこうと思う。",
+                    trans: "장래를 위해 저금을 해 두려고 한다.",
+                    vocab: [
+                        {w:"将来", r:"しょうらい", m:"장래/미래"},
+                        {w:"為に", r:"ために", m:"~를 위해"},
+                        {w:"貯金", r:"ちょきん", m:"저금"},
+                        {w:"～ておく", r:"", m:"~해 두다(준비)"},
+                        {w:"思う", r:"おもう", m:"생각하다"}
+                    ],
+                    tip: "'~ておく'는 나중을 위해 미리 준비해 둔다는 의미의 문법입니다."
+                },
+                {
+                    parts: ["<ruby>勉<rt>べん</rt></ruby><ruby>強<rt>きょう</rt></ruby>すれば", "___", "ほど、", "___", "が", "___", "。"],
+                    answers: ["する", "<ruby>疑問<rt>ぎもん</rt></ruby>", "<ruby>増<rt>ふ</rt></ruby>える"],
+                    full: "勉強すればするほど、疑問が増える。",
+                    trans: "공부하면 할수록 의문이 늘어난다.",
+                    vocab: [
+                        {w:"勉強", r:"べんきょう", m:"공부"},
+                        {w:"～ば～ほど", r:"", m:"~하면 ~할수록"},
+                        {w:"疑問", r:"ぎもん", m:"의문"},
+                        {w:"増える", r:"ふえる", m:"늘다/증가하다"}
+                    ],
+                    tip: "'~ば~ほど'는 '~하면 할수록 더욱 ~하다'라는 비례 관계를 나타냅니다."
+                },
+                {
+                    parts: ["<ruby>友<rt>とも</rt></ruby><ruby>達<rt>だち</rt></ruby>に", "___", "て、", "___", "を", "___", "。"],
+                    answers: ["<ruby>会<rt>あ</rt></ruby>っ", "<ruby>悩<rt>なや</rt></ruby>み", "<ruby>打<rt>う</rt></ruby>ち<ruby>明<rt>あ</rt></ruby>けた"],
+                    full: "友達に会って、悩みを打ち明けた。",
+                    trans: "친구를 만나서 고민을 털어놓았다.",
+                    vocab: [
+                        {w:"友達", r:"ともだち", m:"친구"},
+                        {w:"会う", r:"あう", m:"만나다"},
+                        {w:"悩み", r:"なやみ", m:"고민"},
+                        {w:"打ち明ける", r:"うちあける", m:"털어놓다/고백하다"}
+                    ],
+                    tip: "'打ち明ける'는 비밀이나 고민 등을 숨김없이 이야기한다는 뜻의 복합동사입니다."
+                },
+                {
+                    parts: ["<ruby>雨<rt>あめ</rt></ruby>が", "___", "にも", "___", "、", "___", "は", "___", "われた。"],
+                    answers: ["<ruby>降<rt>ふ</rt></ruby>っている", "<ruby>関<rt>かか</rt></ruby>わらず", "イベント", "<ruby>行<rt>おこな</rt></ruby>"],
+                    full: "雨が降っているにも関わらず、イベントは行われた。",
+                    trans: "비가 오고 있음에도 불구하고 이벤트는 진행되었다.",
+                    vocab: [
+                        {w:"雨", r:"あめ", m:"비"},
+                        {w:"降る", r:"ふる", m:"(비/눈이) 내리다"},
+                        {w:"にも関わらず", r:"にもかかわらず", m:"~임에도 불구하고"},
+                        {w:"イベント", r:"", m:"이벤트/행사"},
+                        {w:"行われる", r:"おこなわれる", m:"거행되다/열리다"}
+                    ],
+                    tip: "'~にも関わらず'는 예상과는 반대되는 결과가 일어났음을 나타낼 때 씁니다."
+                },
+                {
+                    parts: ["<ruby>親<rt>おや</rt></ruby>の", "___", "に", "___", "て、", "___", "へ", "___", "。"],
+                    answers: ["<ruby>期待<rt>きたい</rt></ruby>", "<ruby>応<rt>こた</rt></ruby>え", "<ruby>大学<rt>だいがく</rt></ruby>", "<ruby>進<rt>すす</rt></ruby>む"],
+                    full: "親の期待に応えて、大学へ進む。",
+                    trans: "부모님의 기대에 부응하여 대학에 진학하다.",
+                    vocab: [
+                        {w:"親", r:"おや", m:"부모"},
+                        {w:"期待", r:"きたい", m:"기대"},
+                        {w:"応える", r:"こたえる", m:"부응하다/답하다"},
+                        {w:"大学", r:"だいがく", m:"대학"},
+                        {w:"進む", r:"すすむ", m:"나아가다/진학하다"}
+                    ],
+                    tip: "'~に応えて(こたえて)'는 요망이나 기대 등에 따르다는 뜻입니다."
+                },
+                {
+                    parts: ["<ruby>彼<rt>かれ</rt></ruby>は", "___", "から", "___", "と", "___", "れている。"],
+                    answers: ["<ruby>周<rt>まわ</rt></ruby>り", "<ruby>真面目<rt>まじめ</rt></ruby>だ", "<ruby>言<rt>い</rt></ruby>わ"],
+                    full: "彼は周りから真面目だと言われている。",
+                    trans: "그는 주변으로부터 성실하다는 말을 듣고 있다.",
+                    vocab: [
+                        {w:"彼", r:"かれ", m:"그"},
+                        {w:"周り", r:"まわり", m:"주변/주위"},
+                        {w:"真面目", r:"まじめ", m:"성실함/진심임"},
+                        {w:"言う", r:"いう", m:"말하다"},
+                        {w:"言われる", r:"いわれる", m:"듣다(수동)"}
+                    ],
+                    tip: "수동태 '言われる'는 '듣다'로 해석하는 것이 자연스러울 때가 많습니다."
+                },
+                {
+                    parts: ["<ruby>努力<rt>どりょく</rt></ruby>した", "___", "あって、", "___", "に", "___", "した。"],
+                    answers: ["かい", "<ruby>試験<rt>しけん</rt></ruby>", "<ruby>合格<rt>ごうかく</rt></ruby>"],
+                    full: "努力したかいあって、試験に合格した。",
+                    trans: "노력한 보람이 있어서 시험에 합격했다.",
+                    vocab: [
+                        {w:"努力", r:"どりょく", m:"노력"},
+                        {w:"かいがある", r:"", m:"보람이 있다/효과가 있다"},
+                        {w:"試験", r:"しけん", m:"시험"},
+                        {w:"合格", r:"ごうかく", m:"합격"}
+                    ],
+                    tip: "'~かいがあって'는 어떤 행위에 대한 좋은 결과가 나타났을 때 사용합니다."
+                },
+                {
+                    parts: ["<ruby>疲<rt>つか</rt></ruby>れている", "___", "、", "___", "を", "___", "てしまった。"],
+                    answers: ["せいか", "<ruby>電車<rt>でんしゃ</rt></ruby>", "<ruby>乗<rt>の</rt></ruby>り<ruby>過<rt>す</rt></ruby>ごし"],
+                    full: "疲れているせいか、電車を乗り過ごしてしまった。",
+                    trans: "피곤한 탓인지 전철을 지나쳐 버렸다(못 내렸다).",
+                    vocab: [
+                        {w:"疲れる", r:"つかれる", m:"지치다/피곤하다"},
+                        {w:"～せいか", r:"", m:"~탓인지"},
+                        {w:"電車", r:"でんしゃ", m:"전철"},
+                        {w:"乗り過ごす", r:"のりすごす", m:"내릴 역을 지나치다"},
+                        {w:"しまう", r:"", m:"~해 버리다(완료/유감)"}
+                    ],
+                    tip: "'~せいか'는 원인이 확실하지 않지만, 아마도 그것 때문인 것 같다고 추측할 때 씁니다."
+                },
+                {
+                    parts: ["<ruby>時間<rt>じかん</rt></ruby>が", "___", "ば", "___", "ほど、", "___", "に", "___", "。"],
+                    answers: ["<ruby>経<rt>た</rt></ruby>て", "<ruby>経<rt>た</rt></ruby>つ", "<ruby>不安<rt>ふあん</rt></ruby>", "なる"],
+                    full: "時間が経てば経つほど、不安になる。",
+                    trans: "시간이 지날수록 불안해진다.",
+                    vocab: [
+                        {w:"時間", r:"じかん", m:"시간"},
+                        {w:"経つ", r:"たつ", m:"(시간이) 지나다/경과하다"},
+                        {w:"～ば～ほど", r:"", m:"~하면 ~할수록"},
+                        {w:"不安", r:"ふあん", m:"불안"},
+                        {w:"なる", r:"", m:"되다"}
+                    ],
+                    tip: "'AばAほど' 패턴입니다. '経つ'는 시간이 흐름을 나타냅니다."
+                },
+                {
+                    parts: ["<ruby>彼<rt>かれ</rt></ruby>の", "___", "は、", "___", "に", "___", "。"],
+                    answers: ["<ruby>発言<rt>はつげん</rt></ruby>", "<ruby>常識<rt>じょうしき</rt></ruby>", "<ruby>欠<rt>か</rt></ruby>ける"],
+                    full: "彼の発言は、常識に欠ける。",
+                    trans: "그의 발언은 상식에 벗어난다(상식이 없다).",
+                    vocab: [
+                        {w:"発言", r:"はつげん", m:"발언"},
+                        {w:"常識", r:"じょうしき", m:"상식"},
+                        {w:"欠ける", r:"かける", m:"부족하다/결여되다"}
+                    ],
+                    tip: "'~に欠ける'는 어떤 요소가 부족하거나 없다는 부정적인 뉘앙스로 쓰입니다."
+                },
+                {
+                    parts: ["この", "___", "、", "___", "の", "___", "を", "___", "ます。"],
+                    answers: ["<ruby>際<rt>さい</rt></ruby>", "<ruby>皆様<rt>みなさま</rt></ruby>", "ご<ruby>協力<rt>きょうりょく</rt></ruby>", "<ruby>願<rt>ねが</rt></ruby>い"],
+                    full: "この際、皆様のご協力を願います。",
+                    trans: "이 기회에, 여러분의 협력을 부탁드립니다.",
+                    vocab: [
+                        {w:"この際", r:"このさい", m:"이 기회에/이참에"},
+                        {w:"皆様", r:"みなさま", m:"여러분(존경)"},
+                        {w:"協力", r:"きょうりょく", m:"협력"},
+                        {w:"願う", r:"ねがう", m:"원하다/부탁하다"}
+                    ],
+                    tip: "'この際'는 '이참에', '이번 기회에'라는 뜻으로 결단이나 요청을 할 때 자주 쓰입니다."
+                },
+                {
+                    parts: ["<ruby>彼<rt>かれ</rt></ruby>の", "___", "を", "___", "わけには", "___", "。"],
+                    answers: ["<ruby>頼<rt>たの</rt></ruby>み", "<ruby>断<rt>ことわ</rt></ruby>る", "いかない"],
+                    full: "彼の頼みを断るわけにはいかない。",
+                    trans: "그의 부탁을 거절할 수는 없다.",
+                    vocab: [
+                        {w:"頼み", r:"たのみ", m:"부탁"},
+                        {w:"断る", r:"ことわる", m:"거절하다"},
+                        {w:"わけにはいかない", r:"", m:"~할 수는 없다(도리상)"}
+                    ],
+                    tip: "'~わけにはいかない'는 사회적 통념이나 심리적 이유로 인해 그렇게 할 수 없음을 나타냅니다."
+                },
+                {
+                    parts: ["<ruby>彼女<rt>かのじょ</rt></ruby>は", "___", "だ。いつも", "___", "ばかり", "___", "いる。"],
+                    answers: ["おしゃれ", "<ruby>服<rt>ふく</rt></ruby>", "<ruby>見<rt>み</rt></ruby>て"],
+                    full: "彼女はおしゃれだ。いつも服ばかり見ている。",
+                    trans: "그녀는 멋쟁이다. 항상 옷만 보고 있다.",
+                    vocab: [
+                        {w:"彼女", r:"かのじょ", m:"그녀"},
+                        {w:"おしゃれ", r:"", m:"멋쟁이/멋을 부림"},
+                        {w:"いつも", r:"", m:"항상/언제나"},
+                        {w:"服", r:"ふく", m:"옷"},
+                        {w:"ばかり", r:"", m:"~만/뿐"}
+                    ],
+                    tip: "명사+ばかり는 '그것만 계속' 한다는 의미를 강조합니다."
+                },
+                {
+                    parts: ["<ruby>明日<rt>あした</rt></ruby>は", "___", "ない", "___", "、", "___", "と", "___", "。"],
+                    answers: ["し", "<ruby>限<rt>かぎ</rt></ruby>ら", "<ruby>傘<rt>かさ</rt></ruby>", "<ruby>持<rt>も</rt></ruby>つ"],
+                    full: "明日は晴れるとは限らないし、傘を持つ。",
+                    trans: "내일은 맑다고는 할 수 없으니(맑지 않을 수도 있으니), 우산을 챙긴다.",
+                    vocab: [
+                        {w:"明日", r:"あした", m:"내일"},
+                        {w:"晴れる", r:"はれる", m:"맑다/개다"},
+                        {w:"～とは限らない", r:"とはかぎらない", m:"반드시 ~인 것은 아니다"},
+                        {w:"傘", r:"かさ", m:"우산"},
+                        {w:"持つ", r:"もつ", m:"가지다/들다"}
+                    ],
+                    tip: "'~とは限らない'는 부분 부정을 나타내는 필수 N2 문법입니다."
+                },
+                {
+                    parts: ["<ruby>一度<rt>いちど</rt></ruby>", "___", "た", "___", "、", "___", "まで", "___", "。"],
+                    answers: ["<ruby>決<rt>き</rt></ruby>め", "<ruby>以上<rt>いじょう</rt></ruby>", "<ruby>最後<rt>さいご</rt></ruby>", "やる"],
+                    full: "一度決めた以上、最後までやる。",
+                    trans: "한번 정한 이상, 끝까지 한다.",
+                    vocab: [
+                        {w:"一度", r:"いちど", m:"한번"},
+                        {w:"決める", r:"きめる", m:"정하다/결심하다"},
+                        {w:"～以上", r:"いじょう", m:"~한 이상"},
+                        {w:"最後", r:"さいご", m:"마지막/끝"},
+                        {w:"やる", r:"", m:"하다"}
+                    ],
+                    tip: "'~以上(は)'는 뒤에 결의, 의무, 판단 등이 오는 문형입니다."
+                },
+                {
+                    parts: ["<ruby>今<rt>いま</rt></ruby>の", "___", "では", "___", "は", "___", "。"],
+                    answers: ["<ruby>実力<rt>じつりょく</rt></ruby>", "<ruby>優勝<rt>ゆうしょう</rt></ruby>", "<ruby>無理<rt>むり</rt></ruby>だ"],
+                    full: "今の実力では優勝は無理だ。",
+                    trans: "지금 실력으로는 우승은 무리다.",
+                    vocab: [
+                        {w:"今", r:"いま", m:"지금"},
+                        {w:"実力", r:"じつりょく", m:"실력"},
+                        {w:"～では", r:"", m:"~로서는(판단의 근거)"},
+                        {w:"優勝", r:"ゆうしょう", m:"우승"},
+                        {w:"無理", r:"むり", m:"무리"}
+                    ],
+                    tip: "상황 판단을 나타내는 문장입니다. 명사+では는 '~로서는'의 의미입니다."
+                },
+                {
+                    parts: ["<ruby>部屋<rt>へや</rt></ruby>の", "___", "を", "___", "まま", "___", "しまった。"],
+                    answers: ["<ruby>電気<rt>でんき</rt></ruby>", "つけ", "<ruby>寝<rt>ね</rt></ruby>て"],
+                    full: "部屋の電気をつけたまま寝てしまった。",
+                    trans: "방의 불을 켠 채로 자버렸다.",
+                    vocab: [
+                        {w:"部屋", r:"へや", m:"방"},
+                        {w:"電気", r:"でんき", m:"전기/전등"},
+                        {w:"つける", r:"", m:"(불을) 켜다"},
+                        {w:"～まま", r:"", m:"~한 채로/대로"},
+                        {w:"寝る", r:"ねる", m:"자다"}
+                    ],
+                    tip: "'~たまま'는 어떤 상태가 계속 유지됨을 나타냅니다. (예: 켠 상태 그대로)"
+                }
+            ],
+            business: [
+                {
+                    parts: ["この", "___", "は、", "___", "に", "___", "してください。"],
+                    answers: ["<ruby>書類<rt>しょるい</rt></ruby>", "<ruby>今日中<rt>きょうじゅう</rt></ruby>", "<ruby>提出<rt>ていしゅつ</rt></ruby>"],
+                    full: "この書類は、今日中に提出してください。",
+                    trans: "이 서류는 오늘 중으로 제출해 주세요.",
+                    vocab: [
+                        {w:"書類", r:"しょるい", m:"서류"},
+                        {w:"今日中", r:"きょうじゅう", m:"오늘 중"},
+                        {w:"提出", r:"ていしゅつ", m:"제출"},
+                        {w:"ください", r:"", m:"주세요"}
+                    ],
+                    tip: "시간 + 中에 대한 발음 주의! 今日中(きょうじゅう), 今週中(こんしゅうじゅう) 등 탁음이 붙습니다."
+                },
+                {
+                    parts: ["<ruby>誠<rt>まこと</rt></ruby>に", "___", "ありませんが、", "___", "は", "___", "となっております。"],
+                    answers: ["<ruby>申<rt>もう</rt></ruby>し<ruby>訳<rt>わけ</rt></ruby>", "<ruby>担当者<rt>たんとうしゃ</rt></ruby>", "<ruby>外出中<rt>がいしゅつちゅう</rt></ruby>"],
+                    full: "誠に申し訳ありませんが、担当者は外出中となっております。",
+                    trans: "정말 죄송합니다만, 담당자는 외출 중입니다.",
+                    vocab: [
+                        {w:"誠に", r:"まことに", m:"정말/매우"},
+                        {w:"申し訳ない", r:"もうしわけない", m:"죄송하다/면목없다"},
+                        {w:"担当者", r:"たんとうしゃ", m:"담당자"},
+                        {w:"外出", r:"がいしゅつ", m:"외출"},
+                        {w:"～となっております", r:"", m:"~입니다(정중)"}
+                    ],
+                    tip: "'～となっております'는 '~입니다'의 매우 정중한 비즈니스 표현입니다."
+                },
+                {
+                    parts: ["<ruby>見積書<rt>みつもりしょ</rt></ruby>の", "___", "を", "___", "しましたので、ご", "___", "ください。"],
+                    answers: ["<ruby>作成<rt>さくせい</rt></ruby>", "<ruby>完了<rt>かんりょう</rt></ruby>", "<ruby>確認<rt>かくにん</rt></ruby>"],
+                    full: "見積書の作成を完了しましたので、ご確認ください。",
+                    trans: "견적서 작성을 완료했으니, 확인 부탁드립니다.",
+                    vocab: [
+                        {w:"見積書", r:"みつもりしょ", m:"견적서"},
+                        {w:"作成", r:"さくせい", m:"작성"},
+                        {w:"完了", r:"かんりょう", m:"완료"},
+                        {w:"確認", r:"かくにん", m:"확인"}
+                    ],
+                    tip: "'ご～ください'는 상대방에게 정중하게 행동을 요청할 때 사용하는 존경어 패턴입니다."
+                },
+                {
+                    parts: ["<ruby>会議<rt>かいぎ</rt></ruby>の", "___", "が", "___", "まり", "___", "、ご", "___", "します。"],
+                    answers: ["<ruby>日程<rt>にってい</rt></ruby>", "<ruby>決<rt>き</rt></ruby>", "<ruby>次第<rt>しだい</rt></ruby>", "<ruby>連絡<rt>れんらく</rt></ruby>"],
+                    full: "会議の日程が決まり次第、ご連絡します。",
+                    trans: "회의 일정이 정해지는 대로, 연락드리겠습니다.",
+                    vocab: [
+                        {w:"会議", r:"かいぎ", m:"회의"},
+                        {w:"日程", r:"にってい", m:"일정"},
+                        {w:"決まる", r:"きまる", m:"정해지다/결정되다"},
+                        {w:"～次第", r:"しだい", m:"~하는 대로(즉시)"},
+                        {w:"連絡", r:"れんらく", m:"연락"}
+                    ],
+                    tip: "'ます형 + 次第'는 어떤 일이 끝나자마자 바로 다음 행동을 하겠다는 뜻입니다."
+                },
+                {
+                    parts: ["<ruby>恐<rt>おそ</rt></ruby>れ", "___", "ますが、", "___", "お", "___", "願えますか。"],
+                    answers: ["<ruby>入<rt>い</rt></ruby>り", "<ruby>少<rt>すこ</rt></ruby>し", "<ruby>待<rt>ま</rt></ruby>ち"],
+                    full: "恐れ入りますが、少しお待ち願えますか。",
+                    trans: "죄송하지만, 잠시 기다려 주시겠습니까?",
+                    vocab: [
+                        {w:"恐れ入りますが", r:"おそれいりますが", m:"죄송하지만/황송하지만"},
+                        {w:"少し", r:"すこし", m:"조금/잠시"},
+                        {w:"待つ", r:"まつ", m:"기다리다"},
+                        {w:"願う", r:"ねがう", m:"바라다/원하다"}
+                    ],
+                    tip: "'恐れ入りますが'는 비즈니스에서 쿠션 언어로 매우 자주 쓰이는 필수 표현입니다."
+                },
+                {
+                    parts: ["<ruby>詳細<rt>しょうさい</rt></ruby>に", "___", "ましては、", "___", "の", "___", "を", "___", "ください。"],
+                    answers: ["つき", "<ruby>添付<rt>てんぷ</rt></ruby>", "<ruby>資料<rt>しりょう</rt></ruby>", "<ruby>参照<rt>さんしょう</rt></ruby>"],
+                    full: "詳細につきましては、添付の資料をご参照ください。",
+                    trans: "상세한 내용에 관해서는, 첨부 자료를 참조해 주십시오.",
+                    vocab: [
+                        {w:"詳細", r:"しょうさい", m:"상세"},
+                        {w:"～につきましては", r:"", m:"~에 관해서는(정중)"},
+                        {w:"添付", r:"てんぷ", m:"첨부"},
+                        {w:"資料", r:"しりょう", m:"자료"},
+                        {w:"参照", r:"さんしょう", m:"참조"}
+                    ],
+                    tip: "'~については'의 정중한 표현이 '~につきましては'입니다. 공지사항 등에서 많이 쓰입니다."
+                },
+                {
+                    parts: ["<ruby>申<rt>もう</rt></ruby>し", "___", "ございませんが、", "___", "の", "___", "は", "___", "かねます。"],
+                    answers: ["<ruby>訳<rt>わけ</rt></ruby>", "ご<ruby>希望<rt>きぼう</rt></ruby>", "<ruby>納期<rt>のうき</rt></ruby>", "<ruby>致<rt>いた</rt></ruby>し"],
+                    full: "申し訳ございませんが、ご希望の納期は致しかねます。",
+                    trans: "죄송합니다만, 희망하시는 납기는 맞춰드리기 어렵습니다.",
+                    vocab: [
+                        {w:"申し訳ございません", r:"", m:"죄송합니다(매우 정중)"},
+                        {w:"希望", r:"きぼう", m:"희망"},
+                        {w:"納期", r:"のうき", m:"납기"},
+                        {w:"致しかねる", r:"いたしかねる", m:"하기 어렵다(정중한 거절)"}
+                    ],
+                    tip: "'~かねる'는 '할 수 없다'를 매우 정중하고 완곡하게 표현하는 비즈니스 용어입니다."
+                },
+                {
+                    parts: ["<ruby>弊社<rt>へいしゃ</rt></ruby>の", "___", "サービスを", "___", "いただき、", "___", "ございます。"],
+                    answers: ["<ruby>新<rt>しん</rt></ruby>", "ご<ruby>利用<rt>りよう</rt></ruby>", "ありがとうございます"],
+                    full: "弊社の新サービスをご利用いただき、ありがとうございます。",
+                    trans: "저희 회사의 신규 서비스를 이용해 주셔서, 감사합니다.",
+                    vocab: [
+                        {w:"弊社", r:"へいしゃ", m:"저희 회사(겸양)"},
+                        {w:"新～", r:"しん", m:"신/새로운"},
+                        {w:"利用", r:"りよう", m:"이용"},
+                        {w:"いただく", r:"", m:"~해 받다(겸양)"}
+                    ],
+                    tip: "자신의 회사를 낮추어 말할 때는 '弊社(へいしゃ)', 상대 회사를 높일 때는 '御社(おんしゃ)'를 씁니다."
+                },
+                {
+                    parts: ["<ruby>先方<rt>せんぽう</rt></ruby>と", "___", "の", "___", "、", "___", "が", "___", "しました。"],
+                    answers: ["<ruby>交渉<rt>こうしょう</rt></ruby>", "<ruby>末<rt>すえ</rt></ruby>", "<ruby>契約<rt>けいやく</rt></ruby>", "<ruby>成立<rt>せいりつ</rt></ruby>"],
+                    full: "先方と交渉の末、契約が成立しました。",
+                    trans: "상대방과 교섭 끝에, 계약이 성립되었습니다.",
+                    vocab: [
+                        {w:"先方", r:"せんぽう", m:"상대방/거래처"},
+                        {w:"交渉", r:"こうしょう", m:"교섭/협상"},
+                        {w:"～末", r:"すえ", m:"~한 끝에"},
+                        {w:"契約", r:"けいやく", m:"계약"},
+                        {w:"成立", r:"せいりつ", m:"성립"}
+                    ],
+                    tip: "'~た末(すえ)'는 긴 과정 끝에 어떤 결과에 도달했음을 나타냅니다."
+                },
+                {
+                    parts: ["<ruby>部長<rt>ぶちょう</rt></ruby>、", "___", "の", "___", "でご", "___", "したい", "___", "があります。"],
+                    answers: ["<ruby>例<rt>れい</rt></ruby>", "<ruby>件<rt>けん</rt></ruby>", "<ruby>相談<rt>そうだん</rt></ruby>", "<ruby>事<rt>こと</rt></ruby>"],
+                    full: "部長、例の件でご相談したい事があります。",
+                    trans: "부장님, 예의 그 건으로 상담드리고 싶은 것이 있습니다.",
+                    vocab: [
+                        {w:"部長", r:"ぶちょう", m:"부장"},
+                        {w:"例の件", r:"れいのけん", m:"지난번 그 건/예의 그 일"},
+                        {w:"相談", r:"そうだん", m:"상담/의논"},
+                        {w:"事", r:"こと", m:"일/것"}
+                    ],
+                    tip: "상사에게 말을 걸 때 자주 쓰는 패턴입니다. '例の件(그 건)'은 서로 알고 있는 안건을 지칭합니다."
+                },
+                {
+                    parts: ["<ruby>至<rt>いた</rt></ruby>急、", "___", "の", "___", "を", "___", "して", "___", "。"],
+                    answers: ["<ruby>在庫<rt>ざいこ</rt></ruby>", "<ruby>確認<rt>かくにん</rt></ruby>", "<ruby>報告<rt>ほうこく</rt></ruby>", "くれ"],
+                    full: "至急、在庫の確認を報告してくれ。",
+                    trans: "시급히, 재고 확인을 보고해 주게.",
+                    vocab: [
+                        {w:"至急", r:"しきゅう", m:"지급/시급히"},
+                        {w:"在庫", r:"ざいこ", m:"재고"},
+                        {w:"確認", r:"かくにん", m:"확인"},
+                        {w:"報告", r:"ほうこく", m:"보고"},
+                        {w:"くれ", r:"", m:"~해 줘/해라(명령)"}
+                    ],
+                    tip: "'至急(しきゅう)'는 매우 급하다는 뜻으로, 업무 지시에서 자주 사용됩니다."
+                },
+                {
+                    parts: ["<ruby>今回<rt>こんかい</rt></ruby>の", "___", "は、", "___", "の", "___", "とさせていただきます。"],
+                    answers: ["<ruby>採用<rt>さいよう</rt></ruby>", "<ruby>見<rt>み</rt></ruby>","<ruby>送<rt>おく</rt></ruby>り"],
+                    full: "今回の採用は、見送りとさせていただきます。",
+                    trans: "이번 채용은 보류(불합격)하겠습니다.",
+                    vocab: [
+                        {w:"今回", r:"こんかい", m:"이번"},
+                        {w:"採用", r:"さいよう", m:"채용"},
+                        {w:"見送り", r:"みおくり", m:"보류/배웅"},
+                        {w:"させていただく", r:"", m:"~하겠습니다(겸양)"}
+                    ],
+                    tip: "'見送る'는 비즈니스에서 제안이나 채용 등을 '채택하지 않다(거절하다)'는 완곡한 표현입니다."
+                },
+                {
+                    parts: ["<ruby>会議<rt>かいぎ</rt></ruby>に", "___", "て、", "___", "の", "___", "を", "___", "べた。"],
+                    answers: ["お", "<ruby>今後<rt>こんご</rt></ruby>", "<ruby>方針<rt>ほうしん</rt></ruby>", "<ruby>述<rt>の</rt></ruby>"],
+                    full: "会議において、今後の方針を述べた。",
+                    trans: "회의에서, 향후 방침을 진술했다(말했다).",
+                    vocab: [
+                        {w:"～において", r:"", m:"~에서(장소/상황)"},
+                        {w:"今後", r:"こんご", m:"금후/앞으로"},
+                        {w:"方針", r:"ほうしん", m:"방침"},
+                        {w:"述べる", r:"のべる", m:"진술하다/말하다"}
+                    ],
+                    tip: "'~において'는 격식 있는 자리에서 장소나 상황을 나타내는 조사 'で' 대신 사용됩니다."
+                },
+                {
+                    parts: ["<ruby>定刻<rt>ていこく</rt></ruby>と", "___", "ましたので、", "___", "、", "___", "を", "___", "めます。"],
+                    answers: ["なり", "ただいま", "<ruby>会議<rt>かいぎ</rt></ruby>", "<ruby>始<rt>はじ</rt></ruby>"],
+                    full: "定刻となりましたので、ただいまより、会議を始めます。",
+                    trans: "정각이 되었으므로, 지금부터 회의를 시작하겠습니다.",
+                    vocab: [
+                        {w:"定刻", r:"ていこく", m:"정각"},
+                        {w:"ただいまより", r:"", m:"지금부터(격식)"},
+                        {w:"会議", r:"かいぎ", m:"회의"},
+                        {w:"始める", r:"はじめる", m:"시작하다"}
+                    ],
+                    tip: "회의 시작 멘트로 고정적으로 쓰이는 문구입니다."
+                },
+                {
+                    parts: ["<ruby>承知<rt>しょうち</rt></ruby>", "___", "。", "___", "に", "___", "り", "___", "。"],
+                    answers: ["いたしました", "<ruby>予定<rt>よてい</rt></ruby>", "<ruby>通<rt>どお</rt></ruby>", "ます"],
+                    full: "承知いたしました。予定通り進めます。",
+                    trans: "알겠습니다. 예정대로 진행하겠습니다.",
+                    vocab: [
+                        {w:"承知する", r:"しょうちする", m:"알다/승낙하다(겸양)"},
+                        {w:"予定", r:"よてい", m:"예정"},
+                        {w:"～通り", r:"どおり", m:"~대로"},
+                        {w:"進める", r:"すすめる", m:"진행하다"}
+                    ],
+                    tip: "'分かりました'보다 훨씬 정중한 표현인 '承知いたしました'는 비즈니스 필수 용어입니다."
+                },
+                {
+                    parts: ["<ruby>来週<rt>らいしゅう</rt></ruby>の", "___", "は、", "___", "の", "___", "により", "___", "します。"],
+                    answers: ["プレゼン", "<ruby>諸<rt>しょ</rt></ruby>", "<ruby>事情<rt>じじょう</rt></ruby>", "<ruby>延期<rt>えんき</rt></ruby>"],
+                    full: "来週のプレゼンは、諸事情により延期します。",
+                    trans: "다음 주 프레젠테이션은 여러 사정으로 인해 연기합니다.",
+                    vocab: [
+                        {w:"プレゼン", r:"", m:"프레젠테이션"},
+                        {w:"諸事情", r:"しょじじょう", m:"여러 가지 사정"},
+                        {w:"～により", r:"", m:"~에 의해(원인)"},
+                        {w:"延期", r:"えんき", m:"연기"}
+                    ],
+                    tip: "'諸事情(しょじじょう)'은 구체적인 이유를 밝히기 곤란하거나 복합적일 때 편리하게 쓰는 표현입니다."
+                },
+                {
+                    parts: ["お", "___", "ですが、", "___", "り", "___", "いただけないでしょうか。"],
+                    answers: ["<ruby>手数<rt>てすう</rt></ruby>", "<ruby>折<rt>お</rt></ruby>", "<ruby>返<rt>かえ</rt></ruby>し"],
+                    full: "お手数ですが、折り返しいただけないでしょうか。",
+                    trans: "번거로우시겠지만, 다시 연락(회신) 주실 수 없을까요?",
+                    vocab: [
+                        {w:"お手数", r:"おてすう", m:"수고/번거로움"},
+                        {w:"折り返し", r:"おりかえし", m:"즉시 회신함/다시 연락함"},
+                        {w:"いただく", r:"", m:"받다(겸양)"}
+                    ],
+                    tip: "'お手数ですが'는 상대방에게 무언가를 부탁할 때 쓰는 정중한 쿠션 언어입니다."
+                },
+                {
+                    parts: ["<ruby>当<rt>とう</rt></ruby>", "___", "の", "___", "は、", "___", "に", "___", "ております。"],
+                    answers: ["<ruby>社<rt>しゃ</rt></ruby>", "<ruby>業績<rt>ぎょうせき</rt></ruby>", "<ruby>順調<rt>じゅんちょう</rt></ruby>", "<ruby>伸<rt>の</rt></ruby>び"],
+                    full: "当社の業績は、順調に伸びております。",
+                    trans: "우리 회사의 실적은 순조롭게 성장하고 있습니다.",
+                    vocab: [
+                        {w:"当社", r:"とうしゃ", m:"우리 회사(격식)"},
+                        {w:"業績", r:"ぎょうせき", m:"업적/실적"},
+                        {w:"順調", r:"じゅんちょう", m:"순조로움"},
+                        {w:"伸びる", r:"のびる", m:"늘다/성장하다"}
+                    ],
+                    tip: "'伸びる'는 키나 길이가 자라다 외에도 실적이나 능력이 향상되다는 뜻으로도 쓰입니다."
+                },
+                {
+                    parts: ["<ruby>念<rt>ねん</rt></ruby>のため、", "___", "で", "___", "を", "___", "しておきます。"],
+                    answers: ["メール", "<ruby>詳細<rt>しょうさい</rt></ruby>", "<ruby>共有<rt>きょうゆう</rt></ruby>"],
+                    full: "念のため、メールで詳細を共有しておきます。",
+                    trans: "만약을 위해, 메일로 상세 내용을 공유해 두겠습니다.",
+                    vocab: [
+                        {w:"念のため", r:"ねんのため", m:"만약을 위해/확실히"},
+                        {w:"メール", r:"", m:"메일"},
+                        {w:"詳細", r:"しょうさい", m:"상세"},
+                        {w:"共有", r:"きょうゆう", m:"공유"}
+                    ],
+                    tip: "'念のため'는 확인 차원에서 무언가를 더 할 때 자주 쓰는 표현입니다."
+                },
+                {
+                    parts: ["<ruby>部長<rt>ぶちょう</rt></ruby>は", "___", "、", "___", "を", "___", "されて", "___", "。"],
+                    answers: ["ただいま", "<ruby>席<rt>せき</rt></ruby>", "<ruby>外<rt>はず</rt></ruby>", "います"],
+                    full: "部長はただいま、席を外されています。",
+                    trans: "부장님은 지금 자리를 비우셨습니다.",
+                    vocab: [
+                        {w:"部長", r:"ぶちょう", m:"부장"},
+                        {w:"ただいま", r:"", m:"지금/현재"},
+                        {w:"席を外す", r:"せきをはずす", m:"자리를 비우다"},
+                        {w:"います", r:"", m:"있습니다"}
+                    ],
+                    tip: "전화 응대 시 담당자가 없을 때 쓰는 필수 표현입니다. 존경어 '外されています'를 사용했습니다."
+                }
+            ],
+            travel: [
+                {
+                    parts: ["<ruby>申<rt>もう</rt></ruby>し<ruby>訳<rt>わけ</rt></ruby>ありませんが、", "___", "<ruby>事故<rt>じこ</rt></ruby>で", "___", "が", "___", "おります。"],
+                    answers: ["<ruby>人身<rt>じんしん</rt></ruby>", "<ruby>電車<rt>でんしゃ</rt></ruby>", "<ruby>遅<rt>おく</rt></ruby>れて"],
+                    full: "申し訳ありませんが、人身事故で電車が遅れております。",
+                    trans: "죄송합니다만, 인명 사고로 전철이 지연되고 있습니다.",
+                    vocab: [
+                        {w:"申し訳ありません", r:"", m:"죄송합니다"},
+                        {w:"人身事故", r:"じんしんじこ", m:"인명사고"},
+                        {w:"電車", r:"でんしゃ", m:"전철"},
+                        {w:"遅れる", r:"おくれる", m:"늦다/지연되다"}
+                    ],
+                    tip: "일본 전철 안내방송에서 자주 들리는 표현입니다. '遅れております'는 현재 진행 중인 지연 상태를 나타냅니다."
+                },
+                {
+                    parts: ["すみません、", "___", "の", "___", "り<ruby>場<rt>ば</rt></ruby>は", "___", "ですか。"],
+                    answers: ["バス", "<ruby>乗<rt>の</rt></ruby>", "どこ"],
+                    full: "すみません、バスの乗り場はどこですか。",
+                    trans: "실례합니다, 버스 승강장은 어디입니까?",
+                    vocab: [
+                        {w:"すみません", r:"", m:"실례합니다/죄송합니다"},
+                        {w:"バス", r:"", m:"버스"},
+                        {w:"乗り場", r:"のりば", m:"승강장/타는 곳"},
+                        {w:"どこ", r:"", m:"어디"}
+                    ],
+                    tip: "장소를 물을 때 '～はどこですか(어디입니까?)'는 가장 기본적이고 유용한 표현입니다."
+                },
+                {
+                    parts: ["<ruby>緊急<rt>きんきゅう</rt></ruby>の", "___", "は、", "___", "の", "___", "に<ruby>連絡<rt>れんらく</rt></ruby>してください。"],
+                    answers: ["<ruby>場合<rt>ばあい</rt></ruby>", "<ruby>下記<rt>かき</rt></ruby>", "<ruby>番号<rt>ばんごう</rt></ruby>"],
+                    full: "緊急の場合は、下記の番号に連絡してください。",
+                    trans: "긴급 시에는 아래 번호로 연락해 주세요.",
+                    vocab: [
+                        {w:"緊急", r:"きんきゅう", m:"긴급"},
+                        {w:"場合", r:"ばあい", m:"경우"},
+                        {w:"下記", r:"かき", m:"하기(아래)"},
+                        {w:"番号", r:"ばんごう", m:"번호"},
+                        {w:"連絡", r:"れんらく", m:"연락"}
+                    ],
+                    tip: "'下記(かき)'는 안내문이나 문서에서 '아래에 적힌 내용'을 가리킬 때 쓰입니다."
+                },
+                {
+                    parts: ["チェックイン", "___", "に", "___", "を", "___", "てもいいですか。"],
+                    answers: ["<ruby>前<rt>まえ</rt></ruby>", "<ruby>荷物<rt>にもつ</rt></ruby>", "<ruby>預<rt>あず</rt></ruby>け"],
+                    full: "チェックイン前に荷物を預けてもいいですか。",
+                    trans: "체크인 전에 짐을 맡겨도 될까요?",
+                    vocab: [
+                        {w:"チェックイン", r:"", m:"체크인"},
+                        {w:"前", r:"まえ", m:"전/앞"},
+                        {w:"荷物", r:"にもつ", m:"짐/화물"},
+                        {w:"預ける", r:"あずける", m:"맡기다"},
+                        {w:"～てもいい", r:"", m:"~해도 좋다(허가)"}
+                    ],
+                    tip: "호텔에서 자주 쓰는 표현입니다. '預(あず)ける'는 맡기다, '預(あず)かる'는 맡다(보관하다)입니다."
+                },
+                {
+                    parts: ["この", "___", "は、", "___", "まで", "___", "ですか。"],
+                    answers: ["<ruby>切符<rt>きっぷ</rt></ruby>", "<ruby>途中<rt>とちゅう</rt></ruby>", "<ruby>下車<rt>げしゃ</rt></ruby>", "<ruby>有効<rt>ゆうこう</rt></ruby>"],
+                    full: "この切符は、途中下車まで有効ですか。",
+                    trans: "이 표는 도중 하차까지 유효합니까?",
+                    vocab: [
+                        {w:"切符", r:"きっぷ", m:"표"},
+                        {w:"途中下車", r:"とちゅうげしゃ", m:"도중 하차"},
+                        {w:"まで", r:"", m:"~까지"},
+                        {w:"有効", r:"ゆうこう", m:"유효"}
+                    ],
+                    tip: "여행 중 교통편을 이용할 때 유용한 표현입니다. '途中下車'는 목적지 전 역에서 내리는 것을 말합니다."
+                },
+                {
+                    parts: ["<ruby>道<rt>みち</rt></ruby>に", "___", "しまったんですが、", "___", "を", "___", "てもらえませんか。"],
+                    answers: ["<ruby>迷<rt>まよ</rt></ruby>って", "<ruby>地図<rt>ちず</rt></ruby>", "<ruby>書<rt>か</rt></ruby>い"],
+                    full: "道に迷ってしまったんですが、地図を書いてもらえませんか。",
+                    trans: "길을 잃어버렸는데, 지도를 그려 주시지 않겠습니까?",
+                    vocab: [
+                        {w:"道に迷う", r:"みちにまよう", m:"길을 잃다"},
+                        {w:"地図", r:"ちず", m:"지도"},
+                        {w:"書く", r:"かく", m:"쓰다/그리다"},
+                        {w:"もらえる", r:"", m:"받을 수 있다(가능)"}
+                    ],
+                    tip: "길을 잃었을 때 정중하게 도움을 요청하는 표현입니다."
+                },
+                {
+                    parts: ["<ruby>飛行機<rt>ひこうき</rt></ruby>が", "___", "して、", "___", "に", "___", "なかった。"],
+                    answers: ["<ruby>欠航<rt>けっこう</rt></ruby>", "<ruby>会議<rt>かいぎ</rt></ruby>", "<ruby>間<rt>ま</rt></ruby>に<ruby>合<rt>あ</rt></ruby>わ"],
+                    full: "飛行機が欠航して、会議に間に合わなかった。",
+                    trans: "비행기가 결항되어, 회의 시간에 대지 못했다(늦었다).",
+                    vocab: [
+                        {w:"飛行機", r:"ひこうき", m:"비행기"},
+                        {w:"欠航", r:"けっこう", m:"결항"},
+                        {w:"会議", r:"かいぎ", m:"회의"},
+                        {w:"間に合う", r:"まにあう", m:"시간에 대다/늦지 않다"}
+                    ],
+                    tip: "'欠航(けっこう)'는 비행기나 배가 운행을 취소하는 것을 말합니다."
+                },
+                {
+                    parts: ["<ruby>眺<rt>なが</rt></ruby>めの", "___", "を", "___", "したいのですが。"],
+                    answers: ["いい", "<ruby>部屋<rt>へや</rt></ruby>", "<ruby>希望<rt>きぼう</rt></ruby>"],
+                    full: "眺めのいい部屋を希望したいのですが。",
+                    trans: "전망이 좋은 방을 희망합니다만.",
+                    vocab: [
+                        {w:"眺め", r:"ながめ", m:"전망/경치"},
+                        {w:"いい", r:"", m:"좋다"},
+                        {w:"部屋", r:"へや", m:"방"},
+                        {w:"希望", r:"きぼう", m:"희망/바람"}
+                    ],
+                    tip: "호텔 예약 시 요청사항을 말할 때 유용한 표현입니다."
+                },
+                {
+                    parts: ["<ruby>免税<rt>めんぜい</rt></ruby>", "___", "きを", "___", "したいのですが、", "___", "はどこですか。"],
+                    answers: ["<ruby>手続<rt>てつづ</rt></ruby>", "<ruby>お願<rt>ねが</rt></ruby>い", "<ruby>カウンター</ruby>"],
+                    full: "免税手続きをお願いしたいのですが、カウンターはどこですか。",
+                    trans: "면세 수속을 부탁하고 싶은데, 카운터는 어디입니까?",
+                    vocab: [
+                        {w:"免税", r:"めんぜい", m:"면세"},
+                        {w:"手続き", r:"てつづき", m:"수속/절차"},
+                        {w:"お願いする", r:"おねがいする", m:"부탁하다"},
+                        {w:"カウンター", r:"", m:"카운터"}
+                    ],
+                    tip: "쇼핑 시 꼭 필요한 표현입니다. '免税(Tax Free)' 카운터를 찾을 때 씁니다."
+                },
+                {
+                    parts: ["<ruby>本日<rt>ほんじつ</rt></ruby>は", "___", "のため、", "___", "とさせていただきます。"],
+                    answers: ["<ruby>満席<rt>まんせき</rt></ruby>", "<ruby>貸<rt>か</rt></ruby>し<ruby>切<rt>き</rt></ruby>り"],
+                    full: "本日は満席のため、貸し切りとさせていただきます。",
+                    trans: "오늘은 만석이므로, 대절(전세)로 하겠습니다.",
+                    vocab: [
+                        {w:"本日", r:"ほんじつ", m:"오늘(격식)"},
+                        {w:"満席", r:"まんせき", m:"만석"},
+                        {w:"貸し切り", r:"かしきり", m:"대절/전세"},
+                        {w:"ため", r:"", m:"~때문에"}
+                    ],
+                    tip: "식당이나 시설에 들어갈 수 없는 상황을 설명하는 안내문구입니다."
+                },
+                {
+                    parts: ["<ruby>両替<rt>りょうがえ</rt></ruby>を", "___", "のですが、", "___", "は", "___", "でしょうか。"],
+                    answers: ["したい", "<ruby>手数料<rt>てすうりょう</rt></ruby>", "いくら"],
+                    full: "両替をしたいのですが、手数料はいくらでしょうか。",
+                    trans: "환전을 하고 싶습니다만, 수수료는 얼마입니까?",
+                    vocab: [
+                        {w:"両替", r:"りょうがえ", m:"환전"},
+                        {w:"したい", r:"", m:"하고 싶다"},
+                        {w:"手数料", r:"てすうりょう", m:"수수료"},
+                        {w:"いくら", r:"", m:"얼마"}
+                    ],
+                    tip: "돈을 바꿀 때 쓰는 표현입니다. 'いくらでしょうか'는 정중하게 가격을 묻는 말입니다."
+                },
+                {
+                    parts: ["<ruby>写真<rt>しゃしん</rt></ruby>を", "___", "もらっても", "___", "ですか。"],
+                    answers: ["<ruby>撮<rt>と</rt></ruby>って", "よろしい"],
+                    full: "写真を撮ってもらってもよろしいですか。",
+                    trans: "사진을 찍어 주셔도 괜찮으시겠습니까?",
+                    vocab: [
+                        {w:"写真", r:"しゃしん", m:"사진"},
+                        {w:"撮る", r:"とる", m:"(사진을) 찍다"},
+                        {w:"もらう", r:"", m:"받다"},
+                        {w:"よろしい", r:"", m:"좋다/괜찮다(정중)"}
+                    ],
+                    tip: "다른 사람에게 사진 촬영을 부탁할 때 쓰는 매우 정중한 표현입니다."
+                },
+                {
+                    parts: ["この", "___", "は、", "___", "ですか、それとも", "___", "ですか。"],
+                    answers: ["<ruby>席<rt>せき</rt></ruby>", "<ruby>指定<rt>してい</rt></ruby>", "<ruby>自由<rt>じゆう</rt></ruby>"],
+                    full: "この席は、指定ですか、それとも自由ですか。",
+                    trans: "이 좌석은 지정석입니까, 아니면 자유석입니까?",
+                    vocab: [
+                        {w:"席", r:"せき", m:"좌석/자리"},
+                        {w:"指定", r:"してい", m:"지정"},
+                        {w:"それとも", r:"", m:"아니면/그렇지 않으면"},
+                        {w:"自由", r:"じゆう", m:"자유"}
+                    ],
+                    tip: "일본 기차(신칸센 등)는 지정석과 자유석이 구분된 경우가 많습니다."
+                },
+                {
+                    parts: ["お", "___", "ですが、", "___", "を", "___", "したようです。"],
+                    answers: ["<ruby>尋<rt>たず</rt></ruby>ね", "<ruby>財布<rt>さいふ</rt></ruby>", "<ruby>紛失<rt>ふんしつ</rt></ruby>"],
+                    full: "お尋ねですが、財布を紛失したようです。",
+                    trans: "실례합니다만(여쭤볼 게 있는데요), 지갑을 분실한 것 같습니다.",
+                    vocab: [
+                        {w:"お尋ね", r:"おたずね", m:"물음/질문 (공손한 표현)"},
+                        {w:"財布", r:"さいふ", m:"지갑"},
+                        {w:"紛失", r:"ふんしつ", m:"분실"},
+                        {w:"～ようです", r:"", m:"~인 것 같습니다(추측)"}
+                    ],
+                    tip: "'お尋ねですが'는 낯선 사람이나 직원에게 말을 걸 때 '물어볼 것이 있는데'라는 뜻으로 쓰이는 정중한 표현입니다."
+                },
+                {
+                    parts: ["<ruby>台風<rt>たいふう</rt></ruby>の", "___", "により、", "___", "が", "___", "れております。"],
+                    answers: ["<ruby>影響<rt>えいきょう</rt></ruby>", "<ruby>ダイヤ</ruby>", "<ruby>乱<rt>みだ</rt></ruby>"],
+                    full: "台風の影響により、ダイヤが乱れております。",
+                    trans: "태풍의 영향으로 인해, 배차 시간표(다이아)가 엉망입니다(지연/운휴).",
+                    vocab: [
+                        {w:"台風", r:"たいふう", m:"태풍"},
+                        {w:"影響", r:"えいきょう", m:"영향"},
+                        {w:"ダイヤ", r:"", m:"다이아그램(운행 시간표)"},
+                        {w:"乱れる", r:"みだれる", m:"흐트러지다/어지러워지다"}
+                    ],
+                    tip: "'ダイヤが乱れる'는 열차 등이 시간표대로 운행되지 않는 상태를 말합니다."
+                },
+                {
+                    parts: ["<ruby>日本<rt>にほん</rt></ruby>ならではの", "___", "を", "___", "したいです。"],
+                    answers: ["<ruby>体験<rt>たいけん</rt></ruby>", "<ruby>経験<rt>けいけん</rt></ruby>"],
+                    full: "日本ならではの体験を経験したいです。",
+                    trans: "일본 특유의(일본에서만 할 수 있는) 체험을 경험하고 싶습니다.",
+                    vocab: [
+                        {w:"日本", r:"にほん", m:"일본"},
+                        {w:"～ならでは", r:"", m:"~특유의/~가 아니면 안 되는"},
+                        {w:"体験", r:"たいけん", m:"체험"},
+                        {w:"経験", r:"けいけん", m:"경험"}
+                    ],
+                    tip: "'Nならでは'는 그 명사만이 가진 독특하고 좋은 점을 강조할 때 씁니다."
+                },
+                {
+                    parts: ["<ruby>温泉<rt>おんせん</rt></ruby>に", "___", "って、", "___", "を", "___", "したい。"],
+                    answers: ["<ruby>入<rt>はい</rt></ruby>", "<ruby>旅<rt>たび</rt></ruby>", "<ruby>満喫<rt>まんきつ</rt></ruby>"],
+                    full: "温泉に入って、旅を満喫したい。",
+                    trans: "온천에 들어가서, 여행을 만끽하고 싶다.",
+                    vocab: [
+                        {w:"温泉", r:"おんせん", m:"온천"},
+                        {w:"入る", r:"はいる", m:"들어가다"},
+                        {w:"旅", r:"たび", m:"여행"},
+                        {w:"満喫", r:"まんきつ", m:"만끽"}
+                    ],
+                    tip: "'満喫(まんきつ)'은 충분히 즐긴다는 뜻의 N1~N2 수준 어휘입니다."
+                },
+                {
+                    parts: ["<ruby>搭乗<rt>とうじょう</rt></ruby>", "___", "は、", "___", "30", "___", "までです。"],
+                    answers: ["<ruby>手続<rt>てつづ</rt></ruby>き", "<ruby>出発<rt>しゅっぱつ</rt></ruby>", "<ruby>分前<rt>ぷんまえ</rt></ruby>"],
+                    full: "搭乗手続きは、出発30分前までです。",
+                    trans: "탑승 수속은 출발 30분 전까지입니다.",
+                    vocab: [
+                        {w:"搭乗", r:"とうじょう", m:"탑승"},
+                        {w:"手続き", r:"てつづき", m:"수속/절차"},
+                        {w:"出発", r:"しゅっぱつ", m:"출발"},
+                        {w:"分前", r:"ふんまえ", m:"~분 전"}
+                    ],
+                    tip: "공항에서 시간을 확인할 때 필수적인 표현입니다."
+                },
+                {
+                    parts: ["<ruby>荷物<rt>にもつ</rt></ruby>が", "___", "ので、", "___", "を", "___", "でもいいですか。"],
+                    answers: ["<ruby>多<rt>おお</rt></ruby>い", "<ruby>宅急便<rt>たっきゅうびん</rt></ruby>", "<ruby>利用<rt>りよう</rt></ruby>"],
+                    full: "荷物が多いので、宅急便を利用してもいいですか。",
+                    trans: "짐이 많아서, 택배를 이용해도 될까요?",
+                    vocab: [
+                        {w:"荷物", r:"にもつ", m:"짐"},
+                        {w:"多い", r:"おおい", m:"많다"},
+                        {w:"宅急便", r:"たっきゅうびん", m:"택배(서비스명)"},
+                        {w:"利用", r:"りよう", m:"이용"}
+                    ],
+                    tip: "일본에서는 여행 짐을 공항이나 다음 호텔로 택배(宅急便)로 보내는 서비스가 발달해 있습니다."
+                },
+                {
+                    parts: ["<ruby>非常<rt>ひじょう</rt></ruby>", "___", "には、", "___", "の", "___", "に<ruby>従<rt>したが</rt></ruby>ってください。"],
+                    answers: ["<ruby>時<rt>じ</rt></ruby>", "<ruby>係員<rt>かかりいん</rt></ruby>", "<ruby>指示<rt>しじ</rt></ruby>"],
+                    full: "非常時には、係員の指示に従ってください。",
+                    trans: "비상시에는 담당자의 지시에 따라 주십시오.",
+                    vocab: [
+                        {w:"非常時", r:"ひじょうじ", m:"비상시"},
+                        {w:"係員", r:"かかりいん", m:"담당자/계원"},
+                        {w:"指示", r:"しじ", m:"지시"},
+                        {w:"従う", r:"したがう", m:"따르다"}
+                    ],
+                    tip: "안내 방송이나 경고문에서 자주 볼 수 있는 문구입니다. '従う'는 명령이나 규칙을 따르다는 뜻입니다."
+                }
+            ]
+        };
+
+        // 2. 변수 및 DOM 선택
+        let queue = [], qIdx = 0, score = 0, combo = 0, timer = null, timeLeft = 60, attempt = 0, maxScore = 0;
+        const MAX_Q = 10, SCORE_1 = 20, SCORE_2 = 10, BONUS = 5;
+
+        const els = {
+            screens: document.querySelectorAll('.game-screen'),
+            timer: document.getElementById('ui-timer'),
+            scoreText: document.getElementById('ui-score-text'),
+            q: document.getElementById('ui-question'),
+            qCount: document.getElementById('ui-q-count'), 
+            txt: document.getElementById('ui-text'),
+            choices: document.getElementById('ui-choices'),
+            fb: document.getElementById('ui-feedback'),
+            fb_msg: document.getElementById('fb-msg'),
+            fb_trans: document.getElementById('fb-trans'),
+            fb_vocab: document.getElementById('fb-vocab'),
+            toast: document.getElementById('ui-toast'),
+            nextBtn: document.getElementById('btn-next'),
+            resScore: document.getElementById('res-score'),
+            resRank: document.getElementById('res-rank'), // 등급 표시용
+            resMsg: document.getElementById('res-msg'),
+            wrapper: document.querySelector('.reading-game-container')
+        };
+
+        // 3. 버튼 이벤트 연결 (이벤트 위임)
+        document.querySelectorAll('.theme-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // 다시하기 버튼이면 테마 화면으로 이동
+                if(this.innerText.includes("다시하기")) {
+                    showScreen('view-theme');
+                } else {
+                    const theme = this.getAttribute('data-theme');
+                    if(theme) startGame(theme);
+                }
+            });
+        });
+
+        if(els.nextBtn) els.nextBtn.addEventListener('click', nextQuestion);
+
+        // 4. 게임 로직
+        function showScreen(id) {
+            // id 보정
+            if (!id.startsWith('view-')) id = 'view-' + id.replace('view-', '');
+            
+            els.screens.forEach(s => s.classList.remove('active'));
+            const target = document.getElementById(id);
+            if(target) target.classList.add('active');
+        }
+
+        function startGame(theme) {
+            queue = [];
+            if (theme === 'all') queue = [...db.daily, ...db.philo, ...db.misc];
+            else if (db[theme]) queue = [...db[theme]];
+
+            if (queue.length === 0) return;
+
+            queue.sort(() => 0.5 - Math.random());
+            queue = queue.slice(0, MAX_Q);
+
+            qIdx = 0; score = 0; combo = 0; 
+            maxScore = (MAX_Q * SCORE_1) + ((MAX_Q - 1) * BONUS);
+            
+            updateUI();
+            showScreen('game');
+            loadQuestion();
+        }
+
+        function updateUI() {
+            if(els.scoreText) els.scoreText.innerText = `(${score}/${maxScore})`;
+        }
+
+        function loadQuestion() {
+            attempt = 0; timeLeft = 60;
+            clearInterval(timer);
+            
+            const data = queue[qIdx];
+            if(!data) { showResult(); return; }
+
+            els.q.innerText = data.q;
+            els.qCount.innerText = `[${qIdx+1}/${MAX_Q}]`;
+            if(els.timer) els.timer.innerText = `⏱️ ${timeLeft}`;
+            
+            // 텍스트를 줄바꿈 기준으로 쪼개서 ID 부여 (형광펜용)
+            els.txt.innerHTML = data.text.split('<br>').map((line, i) => 
+                `<div id="line-${i}" style="margin-bottom:8px; line-height:1.6;">${line}</div>`
+            ).join('');
+            
+            els.choices.innerHTML = '';
+            els.choices.style.display = 'flex';
+            els.fb.style.display = 'none';
+            els.toast.style.display = 'none';
+
+            data.opts.forEach((opt, i) => {
+                const btn = document.createElement('div');
+                btn.className = 'choice-btn';
+                btn.innerText = `(${i+1}) ${opt}`;
+                btn.addEventListener('click', () => checkAnswer(i, btn));
+                els.choices.appendChild(btn);
+            });
+
+            timer = setInterval(() => {
+                timeLeft--;
+                if(els.timer) els.timer.innerText = `⏱️ ${timeLeft}`;
+                if (timeLeft <= 0) { clearInterval(timer); showFeedback(false); }
+            }, 1000);
+        }
+
+        function triggerShake() {
+            if(els.wrapper) {
+                els.wrapper.classList.remove('shake-active');
+                void els.wrapper.offsetWidth; 
+                els.wrapper.classList.add('shake-active');
+                setTimeout(() => {
+                    els.wrapper.classList.remove('shake-active');
+                }, 500);
+            }
+        }
+
+        function showPopup(pts) {
+            if(!els.wrapper) return;
+            const p = document.createElement('div');
+            p.className = 'score-popup';
+            p.innerText = `+${pts}`;
+            els.wrapper.appendChild(p);
+            setTimeout(() => p.remove(), 1000);
+        }
+
+        function showComboPopup(count) {
+            if(!els.wrapper) return;
+            const p = document.createElement('div');
+            p.className = 'combo-popup';
+            p.innerText = `🔥 ${count} Combo!`;
+            els.wrapper.appendChild(p);
+            setTimeout(() => p.remove(), 1000);
+        }
+
+        function checkAnswer(choice, btn) {
+            if (btn.classList.contains('disabled')) return;
+            const data = queue[qIdx];
+
+            if (choice === data.ans) {
+                clearInterval(timer);
+                btn.classList.add('correct');
+                
+                let pts = 0;
+                if (attempt === 0) {
+                    combo++;
+                    pts = SCORE_1 + (combo > 1 ? BONUS : 0);
+                    if (window.confetti) confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                    
+                    if(combo > 1) showComboPopup(combo);
+                } else {
+                    pts = SCORE_2;
+                    combo = 0;
+                }
+                
+                score += pts;
+                showPopup(pts);
+                updateUI();
+                showFeedback(true);
+            } else {
+                triggerShake();
+                btn.classList.add('wrong');
+                btn.classList.add('disabled');
+                
+                if (attempt === 0) {
+                    attempt++;
+                    combo = 0; updateUI();
+                    showToast(data.hint);
+                } else {
+                    combo = 0; updateUI();
+                    clearInterval(timer);
+                    showFeedback(false);
+                }
+            }
+        }
+
+        function showFeedback(isSuccess) {
+            const data = queue[qIdx];
+            els.choices.style.display = 'none';
+            els.toast.style.display = 'none';
+            els.fb.style.display = 'block';
+            
+            els.fb.style.borderColor = isSuccess ? '#22c55e' : '#ef4444';
+            els.fb.style.background = isSuccess ? '#f0fdf4' : '#fef2f2';
+            
+            document.getElementById('fb-msg').innerText = isSuccess ? "🎉 정답입니다!" : "⚠️ 정답 확인";
+            document.getElementById('fb-msg').style.color = isSuccess ? "#15803d" : "#ef4444";
+            els.fb_trans.innerHTML = data.trans;
+
+            if (data.evidence !== undefined) {
+                const targetLine = document.getElementById(`line-${data.evidence}`);
+                if (targetLine) {
+                    targetLine.classList.add('highlight-line');
+                }
+            }
+
+            els.fb_vocab.innerHTML = '';
+            if (data.vocab) {
+                data.vocab.forEach(v => {
+                    els.fb_vocab.innerHTML += `
+                        <div class="v-item">
+                            <span class="v-w">${v.w}</span>
+                            <span class="v-r">${v.r}</span>
+                            <span class="v-m">${v.m}</span>
+                        </div>`;
+                });
+            }
+            
+            els.nextBtn.innerText = (qIdx < MAX_Q - 1) ? "다음 문제 ➜" : "결과 보기 📊";
+        }
+
+        function nextQuestion() {
+            qIdx++;
+            if (qIdx < MAX_Q) {
+                loadQuestion();
+                if (window.innerWidth <= 768) {
+                    els.wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            showScreen('result');
+            els.resScore.innerText = score + "점";
+            
+            let rank = "F", msg = "화이팅!", color = "#dc2626";
+            const ratio = score / maxScore;
+
+            if (ratio >= 0.95) { rank = "SSS"; msg = "신의 경지입니다! 🏆"; color="#d97706"; }
+            else if (ratio >= 0.85) { rank = "S"; msg = "합격 안정권입니다!"; color="#2563eb"; }
+            else if (ratio >= 0.75) { rank = "A"; msg = "훌륭해요! 조금만 더!"; color="#16a34a"; }
+            else if (ratio >= 0.60) { rank = "B"; msg = "잘하셨어요. 복습 필수!"; color="#0891b2"; }
+            else if (ratio >= 0.40) { rank = "C"; msg = "기초를 더 다져봅시다."; color="#ea580c"; }
+            
+            if(els.resRank) {
+                els.resRank.innerText = rank;
+                els.resRank.style.color = color;
+            }
+            document.getElementById('res-msg').innerText = msg;
+            if (score >= 180 && window.confetti) confetti();
+        }
+
+        function showToast(msg) {
+            els.toast.innerText = "💡 힌트: " + msg;
+            els.toast.style.display = 'block';
+        }
+    });
+    </script>
+</body>
+</html>
