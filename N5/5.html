@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JLPT N5 단어 퀴즈 5 (조사/문법)</title>
+    
+    <style>
+        /* --- 뒤로가기 버튼 스타일 --- */
+        .back-link {
+            display: inline-block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #34495e;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+            font-weight: bold;
+            transition: 0.3s;
+            text-align: center;
+        }
+        .back-link:hover { background-color: #2c3e50; transform: translateY(-2px); }
+        .top-bar { text-align: center; background-color: #f4f7f6; padding-top: 10px; }
+
+        /* --- 기존 수훈님 CSS 코드 --- */
+        /* 5. 단어 퀴즈 전용 래퍼 (Part 5) */
+        #jp-wordquiz-wrapper-5 {
+            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+            background-color: #2c3e50;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center; /* 오타 수정됨 */
+            padding: 40px 20px;
+            border-radius: 10px;
+            margin: 0 auto 30px auto; /* 중앙 정렬 */
+            max-width: 800px;
+            position: relative;
+            
+            /* 변수 설정 */
+            --max-width: 450px;
+            --q-font: 60px; 
+            --opt-font: 18px;
+            --opt-padding: 15px;
+            --hint-height: 35px;
+        }
+
+        /* 사이즈별 클래스 */
+        #jp-wordquiz-wrapper-5.size-small { --max-width: 350px; --q-font: 45px; --opt-font: 14px; --opt-padding: 10px; --hint-height: 30px; }
+        #jp-wordquiz-wrapper-5.size-large { --max-width: 700px; --q-font: 90px; --opt-font: 24px; --opt-padding: 20px; --hint-height: 50px; }
+
+        /* 내부 컨테이너 */
+        #jp-wordquiz-wrapper-5 .quiz-container {
+            background-color: #34495e; padding: 30px; border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5); text-align: center;
+            width: 100%; max-width: var(--max-width); position: relative; transition: max-width 0.3s; box-sizing: border-box;
+        }
+
+        /* 타이틀 */
+        #jp-wordquiz-wrapper-5 h2.game-title { margin-top: 25px; font-size: 24px; color: #ecf0f1; border: none; margin-bottom: 5px; }
+        .game-subtitle { font-size: 16px; color: #e74c3c; margin-bottom: 15px; font-weight: bold; }
+
+        /* 컨트롤 패널 */
+        .control-panel { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
+        .size-controls, .set-controls { display: flex; gap: 5px; }
+        
+        .ctrl-btn { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #bdc3c7; padding: 5px 10px; font-size: 12px; cursor: pointer; border-radius: 4px; }
+        .ctrl-btn:hover { background: rgba(0,0,0,0.5); color: white; }
+        .ctrl-btn.active { background: #3498db; color: white; border-color: #3498db; }
+        .set-btn.active { background: #e74c3c; border-color: #e74c3c; color: white; }
+
+        /* 상태바 */
+        .quiz-status-bar { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 16px; color: #bdc3c7; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; }
+        .highlight { color: #f1c40f; font-weight: bold; }
+
+        /* 문제 영역 (단어 + 스피커) */
+        .question-area { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 10px 0 5px 0; }
+        .question-box { font-size: var(--q-font); font-weight: bold; min-height: calc(var(--q-font) * 1.5); color: #ecf0f1; text-shadow: 2px 2px 5px rgba(0,0,0,0.3); line-height: 1.2; }
+        
+        /* 스피커 버튼 */
+        .audio-btn { background: #ecf0f1; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.1s; color: #2c3e50; }
+        .audio-btn:active { transform: scale(0.9); }
+        .audio-btn:hover { background: #bdc3c7; }
+
+        /* 힌트 영역 */
+        .question-yomi { font-size: calc(var(--opt-font) + 4px); color: #f39c12; margin-bottom: 20px; height: var(--hint-height); font-weight: bold; transition: opacity 0.3s; display: flex; align-items: center; justify-content: center;}
+
+        /* 보기 버튼 영역 */
+        .options-grid { display: flex; flex-direction: column; gap: 12px; }
+        .option-btn { background-color: #ecf0f1; color: #2c3e50; border: none; padding: var(--opt-padding); font-size: var(--opt-font); border-radius: 8px; cursor: pointer; transition: all 0.1s; font-weight: bold; position: relative; }
+        .option-btn:hover { background-color: #bdc3c7; transform: translateY(-2px); }
+        .option-btn.correct { background-color: #2ecc71 !important; color: white; transform: scale(1.02); }
+        .option-btn.wrong { background-color: #e74c3c !important; color: white; opacity: 0.6; cursor: not-allowed; }
+        .disabled-area { pointer-events: none; }
+
+        /* 결과 화면 */
+        #quizResultScreen_5 { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(44, 62, 80, 0.98); border-radius: 15px; flex-direction: column; align-items: center; justify-content: center; z-index: 10; }
+        #quizResultScreen_5 h2 { font-size: 32px; margin-bottom: 10px; color: #2ecc71; border: none;}
+        .result-stat { font-size: 20px; margin: 5px 0; color: white; }
+        
+        .mistake-log-container { margin-top: 15px; width: 90%; background: rgba(0,0,0,0.3); border-radius: 10px; padding: 10px; max-height: 200px; overflow-y: auto; text-align: left; }
+        .mistake-item { border-bottom: 1px solid rgba(255,255,255,0.1); padding: 8px 0; font-size: 15px; color: #bdc3c7; }
+        .mistake-jp { color: #e74c3c; font-weight: bold; margin-right: 8px;}
+        
+        .restart-btn { margin-top: 25px; padding: 12px 30px; font-size: 18px; background-color: #e67e22; color: white; border: none; border-radius: 8px; cursor: pointer; }
+    </style>
+</head>
+<body style="background-color: #f4f7f6; margin: 0; padding: 0;">
+
+    <div class="top-bar">
+        <a href="../index.html" class="back-link">🔙 메인 목록으로 돌아가기</a>
+    </div>
+
+    <div id="jp-wordquiz-wrapper-5">
+        <div class="quiz-container">
+            
+            <div class="control-panel">
+                <div class="set-controls">
+                    <button class="ctrl-btn set-btn active" onclick="changeSet_5(1)">Set 1</button>
+                    <button class="ctrl-btn set-btn" onclick="changeSet_5(2)">Set 2</button>
+                    <button class="ctrl-btn set-btn" onclick="changeSet_5(3)">Set 3</button>
+                    <button class="ctrl-btn set-btn" onclick="changeSet_5(4)">Set 4</button>
+                    <button class="ctrl-btn set-btn" onclick="changeSet_5(5)">Set 5</button>
+                    <button class="ctrl-btn set-btn" onclick="changeSet_5('all')">ALL</button>
+                </div>
+                <div class="size-controls">
+                    <button class="ctrl-btn size-btn" onclick="setQuizSize_5('small')">작게</button>
+                    <button class="ctrl-btn size-btn active" onclick="setQuizSize_5('medium')" id="btnQuizMedium_5">보통</button>
+                    <button class="ctrl-btn size-btn" onclick="setQuizSize_5('large')">크게</button>
+                </div>
+            </div>
+
+            <h2 class="game-title">🇯🇵 JLPT N5 단어장</h2>
+            <div class="game-subtitle" id="setSubtitle_5">[ Set 1 : 시작하기 ]</div>
+
+            <div class="quiz-status-bar">
+                <span>진행: <span id="quizProgress_5" class="highlight" style="color:#2ecc71">0 / 0</span></span>
+                <span>점수: <span id="quizScore_5" class="highlight">0</span></span>
+            </div>
+
+            <div class="question-area">
+                <div class="question-box" id="quizQuestionText_5">???</div>
+                <button class="audio-btn" onclick="speak_5()" title="단어 듣기">🔊</button>
+            </div>
+            
+            <div class="question-yomi" id="quizHintBox_5"></div>
+
+            <div class="options-grid" id="quizOptionsArea_5"></div>
+
+            <div id="quizResultScreen_5">
+                <h2>🎉 퀴즈 완료! 🎉</h2>
+                <div class="result-stat">최종 점수: <b id="finalQuizScore_5" style="color:#f1c40f">0</b></div>
+                <div class="result-stat">맞춘 개수: <b id="finalQuizProgress_5">0 / 0</b></div>
+                
+                <div class="mistake-log-container">
+                    <div style="font-size:14px; color:#e74c3c; text-align:center; margin-bottom:5px;">▼ 틀린 문법 복습 ▼</div>
+                    <div id="quizMistakeList_5"></div>
+                </div>
+
+                <button class="restart-btn" onclick="initQuizGame_5()">다시 하기</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 5탄: 조사, 지시어, 부사, 필수 문법 (100선)
+        const wordQuizDB_5 = [
+            // Set 1: 필수 조사 (Particles) - 20개
+            { jp: 'は', mean: '은/는 (주제)', yomi: 'wa', set: 1 }, { jp: 'が', mean: '이/가 (주어)', yomi: 'ga', set: 1 }, { jp: 'を', mean: '을/를 (목적격)', yomi: 'o', set: 1 }, { jp: 'も', mean: '도 (역시)', yomi: 'mo', set: 1 }, { jp: 'の', mean: '의 (소유)', yomi: 'no', set: 1 }, { jp: 'に', mean: '에 (시간/장소/대상)', yomi: 'ni', set: 1 }, { jp: 'へ', mean: '에/으로 (방향)', yomi: 'e', set: 1 }, { jp: 'で', mean: '에서(장소)/으로(수단)', yomi: 'de', set: 1 }, { jp: 'と', mean: '와/과 (함께)', yomi: 'to', set: 1 }, { jp: 'や', mean: '랑/이나 (나열)', yomi: 'ya', set: 1 }, { jp: 'か', mean: '까? (의문)/이나 (선택)', yomi: 'ka', set: 1 }, { jp: 'ね', mean: '군요/네요 (동의)', yomi: 'ne', set: 1 }, { jp: 'よ', mean: '요/야 (강조/알림)', yomi: 'yo', set: 1 }, { jp: 'から', mean: '에서/부터 (시점/원인)', yomi: 'kara', set: 1 }, { jp: 'まで', mean: '까지 (종점)', yomi: 'made', set: 1 }, { jp: 'より', mean: '보다 (비교)', yomi: 'yori', set: 1 }, { jp: 'だけ', mean: '만/뿐 (한정)', yomi: 'dake', set: 1 }, { jp: 'しか', mean: '밖에 (뒤에 부정)', yomi: 'shika', set: 1 }, { jp: 'くらい', mean: '정도/쯤', yomi: 'kurai', set: 1 }, { jp: 'など', mean: '등/따위', yomi: 'nado', set: 1 },
+            // Set 2: 지시어 (이/그/저/어느) - 20개
+            { jp: 'これ', mean: '이것', yomi: 'kore', set: 2 }, { jp: 'それ', mean: '그것', yomi: 'sore', set: 2 }, { jp: 'あれ', mean: '저것', yomi: 'are', set: 2 }, { jp: 'どれ', mean: '어느 것', yomi: 'dore', set: 2 }, { jp: 'この', mean: '이 (명사 수식)', yomi: 'kono', set: 2 }, { jp: 'その', mean: '그 (명사 수식)', yomi: 'sono', set: 2 }, { jp: 'あの', mean: '저 (명사 수식)', yomi: 'ano', set: 2 }, { jp: 'どの', mean: '어느 (명사 수식)', yomi: 'dono', set: 2 }, { jp: 'ここ', mean: '여기', yomi: 'koko', set: 2 }, { jp: 'そこ', mean: '거기', yomi: 'soko', set: 2 }, { jp: 'あそこ', mean: '저기', yomi: 'asoko', set: 2 }, { jp: 'どこ', mean: '어디', yomi: 'doko', set: 2 }, { jp: 'こちら', mean: '이쪽 (정중)', yomi: 'kochira', set: 2 }, { jp: 'そちら', mean: '그쪽 (정중)', yomi: 'sochira', set: 2 }, { jp: 'あちら', mean: '저쪽 (정중)', yomi: 'achira', set: 2 }, { jp: 'どちら', mean: '어느 쪽 (정중)', yomi: 'dochira', set: 2 }, { jp: 'こんな', mean: '이런', yomi: 'konna', set: 2 }, { jp: 'そんな', mean: '그런', yomi: 'sonna', set: 2 }, { jp: 'あんな', mean: '저런', yomi: 'anna', set: 2 }, { jp: 'どんな', mean: '어떤', yomi: 'donna', set: 2 },
+            // Set 3: 접속사 & 필수 부사 - 20개
+            { jp: 'そして', mean: '그리고', yomi: 'soshite', set: 3 }, { jp: 'しかし', mean: '그러나', yomi: 'shikashi', set: 3 }, { jp: 'でも', mean: '하지만', yomi: 'demo', set: 3 }, { jp: 'だから', mean: '그래서', yomi: 'dakara', set: 3 }, { jp: 'それから', mean: '그리고 나서', yomi: 'sorekara', set: 3 }, { jp: 'それでは', mean: '그러면/그럼', yomi: 'soredewa', set: 3 }, { jp: 'また', mean: '또/다시', yomi: 'mata', set: 3 }, { jp: 'もう', mean: '벌써/이미/더', yomi: 'mou', set: 3 }, { jp: 'まだ', mean: '아직', yomi: 'mada', set: 3 }, { jp: 'いつも', mean: '언제나/항상', yomi: 'itsumo', set: 3 }, { jp: 'よく', mean: '자주/잘', yomi: 'yoku', set: 3 }, { jp: 'ときどき', mean: '가끔', yomi: 'tokidoki', set: 3 }, { jp: 'あまり', mean: '그다지/별로', yomi: 'amari', set: 3 }, { jp: 'ぜんぜん', mean: '전혀', yomi: 'zenzen', set: 3 }, { jp: 'たぶん', mean: '아마', yomi: 'tabun', set: 3 }, { jp: 'きっと', mean: '꼭/반드시', yomi: 'kitto', set: 3 }, { jp: 'すぐ', mean: '곧/바로', yomi: 'sugu', set: 3 }, { jp: 'だんだん', mean: '점점', yomi: 'dandan', set: 3 }, { jp: 'もっと', mean: '더 (More)', yomi: 'motto', set: 3 }, { jp: 'たくさん', mean: '많이', yomi: 'takusan', set: 3 },
+            // Set 4: 기초 문법 표현 1 - 20개
+            { jp: 'です', mean: '입니다', yomi: 'desu', set: 4 }, { jp: 'ます', mean: '합니다', yomi: 'masu', set: 4 }, { jp: 'ある', mean: '있다 (사물)', yomi: 'aru', set: 4 }, { jp: 'いる', mean: '있다 (생물)', yomi: 'iru', set: 4 }, { jp: 'ない', mean: '없다/아니다', yomi: 'nai', set: 4 }, { jp: 'なる', mean: '되다', yomi: 'naru', set: 4 }, { jp: 'する', mean: '하다', yomi: 'suru', set: 4 }, { jp: 'ほしい', mean: '원하다 (갖고 싶다)', yomi: 'hoshii', set: 4 }, { jp: 'たい', mean: '~하고 싶다 (희망)', yomi: 'tai', set: 4 }, { jp: 'ながら', mean: '~하면서 (동시동작)', yomi: 'nagara', set: 4 }, { jp: 'たり', mean: '~하거나', yomi: 'tari', set: 4 }, { jp: 'てください', mean: '~해 주세요 (부탁)', yomi: 'tekudasai', set: 4 }, { jp: 'ている', mean: '~하고 있다 (진행)', yomi: 'teiru', set: 4 }, { jp: 'てもいい', mean: '~해도 된다 (허가)', yomi: 'temoii', set: 4 }, { jp: 'てはいけない', mean: '~해서는 안 된다 (금지)', yomi: 'tewaikenai', set: 4 }, { jp: 'ないで', mean: '~하지 말고', yomi: 'naide', set: 4 }, { jp: 'のがすき', mean: '~하는 것을 좋아함', yomi: 'nogasuki', set: 4 }, { jp: 'のがじょうず', mean: '~하는 것을 잘함', yomi: 'nogajouzu', set: 4 }, { jp: 'まえに', mean: '~하기 전에', yomi: 'maeni', set: 4 }, { jp: 'あとで', mean: '~한 후에', yomi: 'atode', set: 4 },
+            // Set 5: 접미사 & 기타 표현 - 20개
+            { jp: '～さん', mean: '~씨/님', yomi: 'san', set: 5 }, { jp: '～たち', mean: '~들 (복수)', yomi: 'tachi', set: 5 }, { jp: '～じん', mean: '~인 (국적)', yomi: 'jin', set: 5 }, { jp: '～ご', mean: '~어 (언어)', yomi: 'go', set: 5 }, { jp: '～や', mean: '~가게', yomi: 'ya', set: 5 }, { jp: '～がた', mean: '~분들 (존경)', yomi: 'gata', set: 5 }, { jp: '～まえ', mean: '~전 (시간/위치)', yomi: 'mae', set: 5 }, { jp: '～あと', mean: '~후 (시간)', yomi: 'ato', set: 5 }, { jp: '～なか', mean: '~중/속', yomi: 'naka', set: 5 }, { jp: '～そば', mean: '~곁/옆', yomi: 'soba', set: 5 }, { jp: '～円', mean: '~엔 (화폐)', yomi: 'en', set: 5 }, { jp: '～回', mean: '~회/번 (횟수)', yomi: 'kai', set: 5 }, { jp: '～階', mean: '~층', yomi: 'kai', set: 5 }, { jp: '～個', mean: '~개', yomi: 'ko', set: 5 }, { jp: '～冊', mean: '~권 (책)', yomi: 'satsu', set: 5 }, { jp: '～台', mean: '~대 (기계)', yomi: 'dai', set: 5 }, { jp: '～杯', mean: '~잔/공기', yomi: 'hai', set: 5 }, { jp: '～匹', mean: '~마리 (동물)', yomi: 'hiki', set: 5 }, { jp: '～本', mean: '~자루/병 (긴 것)', yomi: 'hon', set: 5 }, { jp: '～枚', mean: '~장 (종이/티셔츠)', yomi: 'mai', set: 5 }
+        ];
+
+        let quizDeck_5 = [];
+        let currentQuiz_5 = null;
+        let quizScore_5 = 0;
+        let quizCorrectCount_5 = 0;
+        let quizTotalCount_5 = 0;
+        let quizWrongAnswers_5 = []; 
+        let quizStartTime_5 = 0; 
+        let quizMistakeCount_5 = 0; 
+        let currentSet_5 = 1;
+
+        const quizWrapper_5 = document.getElementById('jp-wordquiz-wrapper-5');
+        const qText_5 = document.getElementById('quizQuestionText_5');
+        const qHint_5 = document.getElementById('quizHintBox_5');
+        const qOptions_5 = document.getElementById('quizOptionsArea_5');
+        const qProgress_5 = document.getElementById('quizProgress_5');
+        const qScore_5 = document.getElementById('quizScore_5');
+        const qResult_5 = document.getElementById('quizResultScreen_5');
+        const qMistakeList_5 = document.getElementById('quizMistakeList_5');
+        const qSubtitle_5 = document.getElementById('setSubtitle_5');
+
+        function setQuizSize_5(size) {
+            quizWrapper_5.classList.remove('size-small', 'size-large');
+            const buttons = quizWrapper_5.querySelectorAll('.size-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            if (size === 'small') {
+                quizWrapper_5.classList.add('size-small');
+                quizWrapper_5.querySelector("button[onclick=\"setQuizSize_5('small')\"]").classList.add('active');
+            } else if (size === 'large') {
+                quizWrapper_5.classList.add('size-large');
+                quizWrapper_5.querySelector("button[onclick=\"setQuizSize_5('large')\"]").classList.add('active');
+            } else {
+                document.getElementById('btnQuizMedium_5').classList.add('active');
+            }
+        }
+
+        function changeSet_5(set) {
+            currentSet_5 = set;
+            const setBtns = quizWrapper_5.querySelectorAll('.set-btn');
+            setBtns.forEach(btn => btn.classList.remove('active'));
+            
+            if(set === 'all') {
+                setBtns[5].classList.add('active');
+                qSubtitle_5.innerText = `[ 전체 도전 : 총 ${wordQuizDB_5.length}단어 ]`;
+            } else {
+                setBtns[set-1].classList.add('active');
+                qSubtitle_5.innerText = `[ Set ${set} : 단어 ${getSetRange_5(set)} ]`;
+            }
+            initQuizGame_5();
+        }
+
+        function getSetRange_5(set) {
+            const start = (set - 1) * 20 + 1;
+            const end = set * 20;
+            return `${start}~${end}`;
+        }
+
+        function shuffleQuiz_5(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex != 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        function initQuizGame_5() {
+            let filteredDB = [];
+            if (currentSet_5 === 'all') {
+                filteredDB = [...wordQuizDB_5];
+            } else {
+                filteredDB = wordQuizDB_5.filter(item => item.set === currentSet_5);
+            }
+
+            quizDeck_5 = shuffleQuiz_5(filteredDB); 
+            quizTotalCount_5 = quizDeck_5.length; 
+            quizScore_5 = 0;
+            quizCorrectCount_5 = 0;
+            quizWrongAnswers_5 = [];
+            qScore_5.innerText = quizScore_5;
+            updateQuizProgress_5();
+            qResult_5.style.display = 'none';
+            nextQuizQuestion_5();
+        }
+
+        function updateQuizProgress_5() {
+            qProgress_5.innerText = `${quizCorrectCount_5} / ${quizTotalCount_5}`;
+        }
+
+        function nextQuizQuestion_5() {
+            if (quizDeck_5.length === 0) {
+                endQuizGame_5();
+                return;
+            }
+            qOptions_5.classList.remove('disabled-area');
+            quizMistakeCount_5 = 0; 
+            currentQuiz_5 = quizDeck_5.pop();
+            qText_5.innerText = currentQuiz_5.jp;
+            qHint_5.innerText = ""; 
+            const options = generateQuizOptions_5(currentQuiz_5);
+            renderQuizButtons_5(options);
+            quizStartTime_5 = Date.now();
+        }
+
+        function generateQuizOptions_5(correctItem) {
+            const otherWords = wordQuizDB_5.filter(w => w.jp !== correctItem.jp);
+            const distractors = shuffleQuiz_5(otherWords).slice(0, 4);
+            const finalOptions = [...distractors, correctItem];
+            return shuffleQuiz_5(finalOptions);
+        }
+
+        function renderQuizButtons_5(options) {
+            qOptions_5.innerHTML = '';
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt.mean;
+                btn.onclick = () => checkQuizAnswer_5(btn, opt);
+                qOptions_5.appendChild(btn);
+            });
+        }
+
+        function checkQuizAnswer_5(btn, selectedOpt) {
+            if (selectedOpt.jp === currentQuiz_5.jp) {
+                qOptions_5.classList.add('disabled-area'); 
+                btn.classList.add('correct');
+                
+                if (quizMistakeCount_5 === 0) {
+                    const endTime = Date.now();
+                    const timeTaken = (endTime - quizStartTime_5) / 1000; 
+                    const point = Math.max(20, Math.floor(100 - (timeTaken * 5))); 
+                    quizScore_5 += point;
+                    quizCorrectCount_5++; 
+                } else {
+                    quizCorrectCount_5++; 
+                }
+
+                qScore_5.innerText = quizScore_5;
+                updateQuizProgress_5(); 
+                setTimeout(nextQuizQuestion_5, 500); 
+            } else {
+                btn.classList.add('wrong');
+                btn.disabled = true; 
+                
+                if (quizMistakeCount_5 === 0) {
+                    quizMistakeCount_5++;
+                    qHint_5.innerText = `💡 힌트: ${currentQuiz_5.yomi}`;
+                    if (!quizWrongAnswers_5.some(w => w.jp === currentQuiz_5.jp)) {
+                        quizWrongAnswers_5.push(currentQuiz_5);
+                    }
+                } else {
+                    qOptions_5.classList.add('disabled-area'); 
+                    const allBtns = qOptions_5.querySelectorAll('.option-btn');
+                    allBtns.forEach(b => {
+                        if (b.innerText === currentQuiz_5.mean) b.classList.add('correct');
+                    });
+                    setTimeout(nextQuizQuestion_5, 1500);
+                }
+            }
+        }
+
+        function endQuizGame_5() {
+            document.getElementById('finalQuizScore_5').innerText = quizScore_5;
+            document.getElementById('finalQuizProgress_5').innerText = `${quizCorrectCount_5} / ${quizTotalCount_5}`;
+            qMistakeList_5.innerHTML = '';
+            if (quizWrongAnswers_5.length === 0) {
+                qMistakeList_5.innerHTML = '<div style="color:#2ecc71; text-align:center; padding:20px;">🏆 완벽합니다!</div>';
+            } else {
+                quizWrongAnswers_5.forEach(w => {
+                    const item = document.createElement('div');
+                    item.className = 'mistake-item';
+                    item.innerHTML = `<span class="mistake-jp">${w.jp}</span> (${w.yomi}) : ${w.mean}`;
+                    qMistakeList_5.appendChild(item);
+                });
+            }
+            qResult_5.style.display = 'flex';
+        }
+
+        function speak_5() {
+            if (!('speechSynthesis' in window)) {
+                alert("이 브라우저는 음성 기능을 지원하지 않습니다.");
+                return;
+            }
+            const text = currentQuiz_5.jp;
+            const utt = new SpeechSynthesisUtterance(text);
+            utt.lang = 'ja-JP';
+            utt.rate = 0.9; 
+
+            const voices = window.speechSynthesis.getVoices();
+            const jaVoice = voices.find(v => v.lang.includes('ja') || v.lang.includes('JP'));
+            if (jaVoice) utt.voice = jaVoice;
+
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(utt);
+        }
+
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = function() { 
+                window.speechSynthesis.getVoices(); 
+            };
+        }
+
+        initQuizGame_5();
+    </script>
+</body>
+</html>
